@@ -1,5 +1,7 @@
 from fastapi import FastAPI,UploadFile,File
 import shutil
+from utils.parser import extract_text
+import os
 
 app=FastAPI()
 
@@ -13,7 +15,10 @@ async def upload_resume(file: UploadFile = File(...)):
     with open(file_location, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
+        extracted_text = extract_text(file_location)
+        os.remove(file_location)
+
     return {
         "filename": file.filename,
-        "message": "Resume uploaded successfully"
-    }
+        "extracted_text": extracted_text[:1000]
+        }
