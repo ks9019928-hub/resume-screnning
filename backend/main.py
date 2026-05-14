@@ -5,6 +5,8 @@ import os
 from utils.parser import extract_text_from_pdf, extract_skills
 from pydantic import BaseModel
 from services.matcher import match_resume_to_jd
+from backend.db import candidates_collection
+from backend.services.ats import calculate
 
 app=FastAPI()
 
@@ -24,6 +26,13 @@ async def upload_resume(file: UploadFile = File(...)):
 
         extracted_text = extract_text(file_location)
         skills = extract_skills(extracted_text)
+        candidate_data = {
+        "filename": file.filename,
+        "skills": skills,
+        "resume_preview": extracted_text[:1000]
+    }
+
+        candidates_collection.insert_one(candidate_data)
         os.remove(file_location)
 
     return {
@@ -43,3 +52,14 @@ def match_resume(data: JDRequest):
     return {
         "match_score": score
     }
+@app.post("/ats-score")
+def ats_score(data: JDRequest):
+
+    skills = extract_skills(data.resume_text)
+
+    result = calculate(
+        skills,
+        data.job_description
+    )
+
+    return result
