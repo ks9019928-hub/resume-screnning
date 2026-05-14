@@ -2,12 +2,12 @@ from fastapi import FastAPI,UploadFile,File
 import shutil
 from utils.parser import extract_text
 import os
-from utils.parser import extract_text_from_pdf, extract_skills
+from utils.parser import extract_text, extract_skill
 from pydantic import BaseModel
 from services.matcher import match_resume_to_jd
-from backend.db import candidates_collection
-from backend.services.ats import calculate
-from services.recommendation import generate_recommendations
+from database.db import candidates_collection
+from services.ats import calculate
+from services.recommendation import gen_recommendation
 from services.chatbot import ask_resume_bot
 
 app=FastAPI()
@@ -31,7 +31,7 @@ async def upload_resume(file: UploadFile = File(...)):
         shutil.copyfileobj(file.file, buffer)
 
         extracted_text = extract_text(file_location)
-        skills = extract_skills(extracted_text)
+        skills = extract_skill(extracted_text)
         candidate_data = {
         "filename": file.filename,
         "skills": skills,
@@ -61,7 +61,7 @@ def match_resume(data: JDRequest):
 @app.post("/ats-score")
 def ats_score(data: JDRequest):
 
-    skills = extract_skills(data.resume_text)
+    skills = extract_skill(data.resume_text)
 
     result = calculate(
         skills,
@@ -73,9 +73,9 @@ def ats_score(data: JDRequest):
 @app.post("/recommend")
 def recommend(data: JDRequest):
 
-    skills = extract_skills(data.resume_text)
+    skills = extract_skill(data.resume_text)
 
-    recommendations = generate_recommendations(
+    recommendations = gen_recommendation(
         skills,
         data.job_description
     )

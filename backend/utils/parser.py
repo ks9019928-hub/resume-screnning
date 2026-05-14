@@ -14,6 +14,6 @@ def extract_skill(text):
     found_skills=[]
     text=text.lower()
     for skill in SKILLS:
-        if SKILLS.lower in text:
-            found_skills.append(text)
+        if skill.lower in text:
+            found_skills.append(skill)
     return found_skills
