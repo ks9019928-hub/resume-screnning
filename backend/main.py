@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from services.matcher import match_resume_to_jd
 from backend.db import candidates_collection
 from backend.services.ats import calculate
+from services.recommendation import generate_recommendations
 
 app=FastAPI()
 
@@ -63,3 +64,18 @@ def ats_score(data: JDRequest):
     )
 
     return result
+
+@app.post("/recommend")
+def recommend(data: JDRequest):
+
+    skills = extract_skills(data.resume_text)
+
+    recommendations = generate_recommendations(
+        skills,
+        data.job_description
+    )
+
+    return {
+        "skills": skills,
+        "recommendations": recommendations
+    }

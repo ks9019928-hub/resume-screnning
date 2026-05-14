@@ -7,4 +7,3 @@ __pycache__/
 .env
 uploads/
 backend/uploads/
-"extracted_text": extracted_text[:1000]
