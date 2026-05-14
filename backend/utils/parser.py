@@ -1,4 +1,6 @@
 import pdfplumber
+from data.skills import SKILLS
+
 def extract_text(pdf_path):
     text=""
     with pdfplumber.open(pdf_path) as pdf:
@@ -7,3 +9,11 @@ def extract_text(pdf_path):
             if extracted:
                 text+=extracted+"\n"
     return text
+
+def extract_skill(text):
+    found_skills=[]
+    text=text.lower()
+    for skill in SKILLS:
+        if SKILLS.lower in text:
+            found_skills.append(text)
+    return found_skills
