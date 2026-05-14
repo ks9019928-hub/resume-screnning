@@ -8,12 +8,17 @@ from services.matcher import match_resume_to_jd
 from backend.db import candidates_collection
 from backend.services.ats import calculate
 from services.recommendation import generate_recommendations
+from services.chatbot import ask_resume_bot
 
 app=FastAPI()
 
 class JDRequest(BaseModel):
     resume_text: str
     job_description: str
+
+class ChatRequest(BaseModel):
+    resume_text: str
+    question: str
 
 @app.get("/")
 def home():
@@ -78,4 +83,16 @@ def recommend(data: JDRequest):
     return {
         "skills": skills,
         "recommendations": recommendations
+    }
+
+@app.post("/chat")
+def chat_with_bot(data: ChatRequest):
+
+    answer = ask_resume_bot(
+        data.resume_text,
+        data.question
+    )
+
+    return {
+        "answer": answer
     }
