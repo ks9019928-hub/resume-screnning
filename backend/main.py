@@ -9,6 +9,7 @@ from database.db import candidates_collection
 from services.ats import calculate
 from services.recommendation import gen_recommendation
 from services.chatbot import ask_resume_bot
+from fastapi import Form
 
 app=FastAPI()
 
@@ -95,4 +96,53 @@ def chat_with_bot(data: ChatRequest):
 
     return {
         "answer": answer
+    }
+@app.post("/analyze-resume")
+async def analyze_resume(
+    file: UploadFile = File(...),
+    job_description: str = Form(...)
+):
+
+    file_location = f"uploads/{file.filename}"
+
+    with open(file_location, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    extracted_text = extract_text(file_location)
+
+    skills = extract_skill(extracted_text)
+
+    semantic_score = match_resume_to_jd(
+        extracted_text,
+        job_description
+    )
+
+    ats_result = calculate(
+        skills,
+        job_description
+    )
+
+    recommendations = gen_recommendation(
+        skills,
+        job_description
+    )
+
+    candidate_data = {
+        "filename": file.filename,
+        "skills": skills,
+        "semantic_score": semantic_score,
+        "ats_score": ats_result["ats_score"]
+    }
+
+    candidates_collection.insert_one(candidate_data)
+
+    os.remove(file_location)
+
+    return {
+        "filename": file.filename,
+        "skills": skills,
+        "semantic_match": semantic_score,
+        "ats_analysis": ats_result,
+        "recommendations": recommendations,
+        "resume_preview": extracted_text[:1000]
     }

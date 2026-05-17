@@ -1,15 +1,15 @@
-from openai import OpenAI
-from dotenv import load_dotenv
 import os
+import google.generativeai as genai
+from dotenv import load_dotenv
 
 load_dotenv()
 
-client = OpenAI(
-    api_key=os.getenv("OPENAI_API_KEY")
-)
-
+# Configure the Gemini client
+genai.configure(api_key=os.getenv("MY_API_KEY"))
 
 def ask_resume_bot(resume_text, question):
+    # Initialize the model (Gemini 1.5 Flash is great for speed and free tier)
+    model = genai.GenerativeModel('gemini-1.5-flash')
 
     prompt = f"""
     You are an AI career assistant.
@@ -23,14 +23,8 @@ def ask_resume_bot(resume_text, question):
     Give concise, practical, and professional advice.
     """
 
-    response = client.chat.completions.create(
-        model="gpt-4.1-mini",
-        messages=[
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ]
-    )
+    # Generate the response
+    response = model.generate_content(prompt)
 
-    return response.choices[0].message.content
+    # Gemini returns the text directly in the .text attribute
+    return response.text
