@@ -11,7 +11,7 @@ function App() {
   const handleAnalyze = async () => {
 
     if (!file || !jobDescription) {
-      alert("Please upload resume and add job description");
+      alert("Please upload a resume and add job description");
       return;
     }
 
@@ -34,7 +34,7 @@ function App() {
     } catch (error) {
 
       console.error(error);
-      alert("Error analyzing resume");
+      alert("Analysis failed");
 
     } finally {
 
@@ -44,65 +44,107 @@ function App() {
 
   return (
 
-    <div style={{ padding: "40px", fontFamily: "Arial" }}>
+    <div className="min-h-screen bg-gray-100 p-10">
 
-      <h1>AI Resume Analyzer</h1>
+      <div className="max-w-5xl mx-auto">
 
-      <input
-        type="file"
-        onChange={(e) => setFile(e.target.files[0])}
-      />
+        <h1 className="text-5xl font-bold text-center mb-10">
+          AI Resume Analyzer
+        </h1>
 
-      <br /><br />
+        <div className="bg-white rounded-2xl shadow-lg p-8">
 
-      <textarea
-        rows="10"
-        cols="70"
-        placeholder="Paste Job Description Here"
-        value={jobDescription}
-        onChange={(e) => setJobDescription(e.target.value)}
-      />
+          <input
+            type="file"
+            className="mb-6"
+            onChange={(e) => setFile(e.target.files[0])}
+          />
 
-      <br /><br />
+          <textarea
+            rows="10"
+            placeholder="Paste Job Description"
+            className="w-full border rounded-xl p-4 mb-6"
+            value={jobDescription}
+            onChange={(e) => setJobDescription(e.target.value)}
+          />
 
-      <button onClick={handleAnalyze}>
-        {loading ? "Analyzing..." : "Analyze Resume"}
-      </button>
-
-      {result && (
-
-        <div style={{ marginTop: "40px" }}>
-
-          <h2>Analysis Result</h2>
-
-          <p>
-            <strong>Skills:</strong>
-            {" "}
-            {result.skills.join(", ")}
-          </p>
-
-          <p>
-            <strong>Semantic Match:</strong>
-            {" "}
-            {result.semantic_match}%
-          </p>
-
-          <p>
-            <strong>ATS Score:</strong>
-            {" "}
-            {result.ats_analysis.ats_score}
-          </p>
-
-          <h3>Recommendations</h3>
-
-          <ul>
-            {result.recommendations.map((rec, index) => (
-              <li key={index}>{rec}</li>
-            ))}
-          </ul>
+          <button
+            onClick={handleAnalyze}
+            className="bg-black text-white px-6 py-3 rounded-xl hover:opacity-90"
+          >
+            {loading ? "Analyzing..." : "Analyze Resume"}
+          </button>
 
         </div>
-      )}
+
+        {result && (
+
+          <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <div className="bg-white rounded-2xl shadow-lg p-6">
+
+              <h2 className="text-2xl font-bold mb-4">
+                Scores
+              </h2>
+
+              <p className="mb-2">
+                <strong>Semantic Match:</strong>
+                {" "}
+                {result.semantic_match}%
+              </p>
+
+              <p>
+                <strong>ATS Score:</strong>
+                {" "}
+                {result.ats_analysis.ats_score}
+              </p>
+
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-lg p-6">
+
+              <h2 className="text-2xl font-bold mb-4">
+                Skills
+              </h2>
+
+              <div className="flex flex-wrap gap-2">
+
+                {result.skills.map((skill, index) => (
+
+                  <span
+                    key={index}
+                    className="bg-gray-200 px-3 py-1 rounded-full"
+                  >
+                    {skill}
+                  </span>
+
+                ))}
+
+              </div>
+
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-lg p-6 md:col-span-2">
+
+              <h2 className="text-2xl font-bold mb-4">
+                Recommendations
+              </h2>
+
+              <ul className="list-disc pl-5 space-y-2">
+
+                {result.recommendations.map((rec, index) => (
+                  <li key={index}>{rec}</li>
+                ))}
+
+              </ul>
+
+            </div>
+
+          </div>
+
+        )}
+
+      </div>
 
     </div>
   );
