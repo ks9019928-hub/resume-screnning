@@ -10,8 +10,16 @@ from services.ats import calculate
 from services.recommendation import gen_recommendation
 from services.chatbot import ask_resume_bot
 from fastapi import Form
+from fastapi.middleware.cors import CORSMiddleware
 
 app=FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class JDRequest(BaseModel):
     resume_text: str
