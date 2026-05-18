@@ -1,6 +1,7 @@
 import os
 import google.generativeai as genai
 from dotenv import load_dotenv
+from services.rag import retrieve_relevant_chunks
 
 load_dotenv()
 
@@ -9,22 +10,19 @@ genai.configure(api_key=os.getenv("MY_API_KEY"))
 
 def ask_resume_bot(resume_text, question):
     # Initialize the model (Gemini 1.5 Flash is great for speed and free tier)
-    model = genai.GenerativeModel('gemini-1.5-flash')
+   context = retrieve_relevant_chunks(question)
 
-    prompt = f"""
-    You are an AI career assistant.
+   prompt = f"""
+   You are an AI career assistant.
 
-    Resume:
-    {resume_text}
+   Relevant Resume Context:
+   {context}
 
-    User Question:
-    {question}
+   User Question:
+   {question}
 
-    Give concise, practical, and professional advice.
-    """
+Give concise and practical advice.
+"""
+    # Generate the response response = model.generate_content(prompt)
 
-    # Generate the response
-    response = model.generate_content(prompt)
-
-    # Gemini returns the text directly in the .text attribute
-    return response.text
+    # Gemini returns the text directly in the .text attribute return response.text
