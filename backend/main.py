@@ -11,6 +11,7 @@ from services.recommendation import gen_recommendation
 from services.chatbot import ask_resume_bot
 from fastapi import Form
 from fastapi.middleware.cors import CORSMiddleware
+from services.rag import store_resume_embeddings
 
 app=FastAPI()
 app.add_middleware(
@@ -117,6 +118,7 @@ async def analyze_resume(
         shutil.copyfileobj(file.file, buffer)
 
     extracted_text = extract_text(file_location)
+    store_resume_embeddings(extracted_text)
 
     skills = extract_skill(extracted_text)
 
