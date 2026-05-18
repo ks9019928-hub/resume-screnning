@@ -7,6 +7,9 @@ function App() {
   const [jobDescription, setJobDescription] = useState("");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [question, setQuestion] = useState("");
+const [chatResponse, setChatResponse] = useState("");
+const [chatLoading, setChatLoading] = useState(false);
 
   const handleAnalyze = async () => {
 
@@ -139,6 +142,40 @@ function App() {
               </ul>
 
             </div>
+            <div className="bg-white rounded-3xl shadow-xl p-6 md:col-span-2">
+
+  <h2 className="text-2xl font-bold mb-4">
+    AI Career Assistant
+  </h2>
+
+  <textarea
+    rows="4"
+    value={question}
+    onChange={(e) => setQuestion(e.target.value)}
+    placeholder="Ask AI about your resume..."
+    className="w-full border rounded-xl p-4 mb-4"
+  />
+
+  <button
+    onClick={handleChat}
+    className="bg-black text-white px-6 py-3 rounded-2xl"
+  >
+    {chatLoading ? "Thinking..." : "Ask AI"}
+  </button>
+
+  {chatResponse && (
+
+    <div className="mt-6 bg-gray-100 rounded-2xl p-5">
+
+      <p className="whitespace-pre-line">
+        {chatResponse}
+      </p>
+
+    </div>
+
+  )}
+
+</div>
 
           </div>
 
