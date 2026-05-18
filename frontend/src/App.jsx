@@ -8,42 +8,53 @@ function App() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [question, setQuestion] = useState("");
-const [chatResponse, setChatResponse] = useState("");
-const [chatLoading, setChatLoading] = useState(false);
+  const [messages, setMessages] = useState([]);
+  const [chatLoading, setChatLoading] = useState(false);
 
-  const handleAnalyze = async () => {
+ const handleChat = async () => {
 
-    if (!file || !jobDescription) {
-      alert("Please upload a resume and add job description");
-      return;
-    }
+  if (!result || !question) {
+    return;
+  }
 
-    const formData = new FormData();
-
-    formData.append("file", file);
-    formData.append("job_description", jobDescription);
-
-    try {
-
-      setLoading(true);
-
-      const response = await axios.post(
-        "http://127.0.0.1:8000/analyze-resume",
-        formData
-      );
-
-      setResult(response.data);
-
-    } catch (error) {
-
-      console.error(error);
-      alert("Analysis failed");
-
-    } finally {
-
-      setLoading(false);
-    }
+  const userMessage = {
+    role: "user",
+    content: question
   };
+
+  setMessages((prev) => [...prev, userMessage]);
+
+  try {
+
+    setChatLoading(true);
+
+    const response = await axios.post(
+      "http://127.0.0.1:8000/chat",
+      {
+        resume_text: result.resume_preview,
+        question: question
+      }
+    );
+
+    const aiMessage = {
+      role: "assistant",
+      content: response.data.answer
+    };
+
+    setMessages((prev) => [...prev, aiMessage]);
+
+    setQuestion("");
+
+  } catch (error) {
+
+    console.error(error);
+    alert("Chat failed");
+
+  } finally {
+
+    setChatLoading(false);
+  }
+};
 
   return (
 
@@ -163,17 +174,26 @@ const [chatLoading, setChatLoading] = useState(false);
     {chatLoading ? "Thinking..." : "Ask AI"}
   </button>
 
-  {chatResponse && (
+  <div className="mt-6 space-y-4">
 
-    <div className="mt-6 bg-gray-100 rounded-2xl p-5">
+  {messages.map((msg, index) => (
 
+    <div
+      key={index}
+      className={`p-4 rounded-2xl max-w-3xl ${
+        msg.role === "user"
+          ? "bg-black text-white ml-auto"
+          : "bg-gray-100"
+      }`}
+    >
       <p className="whitespace-pre-line">
-        {chatResponse}
+        {msg.content}
       </p>
-
     </div>
 
-  )}
+  ))}
+
+</div>
 
 </div>
 
