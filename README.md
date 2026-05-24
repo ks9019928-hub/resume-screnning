@@ -242,7 +242,7 @@ npm run dev
 
 # 🚀 Live Deployment & Links
 
-## 🌐 Deployment
+## 🌐 Deployment(will be available soon)
 
 - **Live Application:** [Launch Resume Screener](https://your-deployment-link.com)
 - **API Documentation:** [View Swagger / Redoc](https://your-deployment-link.com/docs)
