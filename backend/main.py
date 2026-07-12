@@ -162,3 +162,30 @@ async def analyze_resume(
         "recommendations": recommendations,
         "resume_preview": extracted_text[:1000]
     }
+@app.post("/register")
+def register(user: UserRegister):
+
+    existing_user = users_collection.find_one(
+        {"email": user.email}
+    )
+
+    if existing_user:
+        return {
+            "message": "User already exists"
+        }
+
+    hashed_password = hash_password(
+        user.password
+    )
+
+    user_data = {
+        "username": user.username,
+        "email": user.email,
+        "password": hashed_password
+    }
+
+    users_collection.insert_one(user_data)
+
+    return {
+        "message": "User registered successfully"
+    }
