@@ -15,6 +15,8 @@ from services.rag import store_resume_embeddings
 from auth.hashing import hash_password,verify_password
 from database.db import users_collection
 from auth.jwt_handler import create_access_token
+from auth.dependencies import get_current_user
+from fastapi import Depends
 
 app=FastAPI()
 app.add_middleware(
