@@ -12,6 +12,8 @@ from services.chatbot import ask_resume_bot
 from fastapi import Form
 from fastapi.middleware.cors import CORSMiddleware
 from services.rag import store_resume_embeddings
+from auth.hashing import hash_password
+from database.db import users_collection
 
 app=FastAPI()
 app.add_middleware(
@@ -30,6 +32,10 @@ class ChatRequest(BaseModel):
     resume_text: str
     question: str
 
+class UserRegister(BaseModel):
+    username: str
+    email: str
+    password: str
 @app.get("/")
 def home():
     return {"message": "Resume Screening API Running"}
