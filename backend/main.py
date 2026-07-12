@@ -12,8 +12,9 @@ from services.chatbot import ask_resume_bot
 from fastapi import Form
 from fastapi.middleware.cors import CORSMiddleware
 from services.rag import store_resume_embeddings
-from auth.hashing import hash_password
+from auth.hashing import hash_password,verify_password
 from database.db import users_collection
+from auth.jwt_handler import create_access_token
 
 app=FastAPI()
 app.add_middleware(
@@ -40,7 +41,7 @@ class UserRegister(BaseModel):
 class UserLogin(BaseModel):
     email: str
     password: str
-    
+
 @app.get("/")
 def home():
     return {"message": "Resume Screening API Running"}
@@ -193,4 +194,35 @@ def register(user: UserRegister):
 
     return {
         "message": "User registered successfully"
+    }
+@app.post("/login")
+def login(user: UserLogin):
+
+    db_user = users_collection.find_one(
+        {"email": user.email}
+    )
+
+    if not db_user:
+        return {
+            "message": "User not found"
+        }
+
+    if not verify_password(
+        user.password,
+        db_user["password"]
+    ):
+        return {
+            "message": "Incorrect password"
+        }
+
+    access_token = create_access_token(
+        {
+            "sub": str(db_user["_id"]),
+            "email": db_user["email"]
+        }
+    )
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer"
     }
