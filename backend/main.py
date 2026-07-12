@@ -121,9 +121,15 @@ def chat_with_bot(data: ChatRequest):
         "answer": answer
     }
 @app.post("/analyze-resume")
+
 async def analyze_resume(
+
     file: UploadFile = File(...),
-    job_description: str = Form(...)
+
+    job_description: str = Form(...),
+
+    current_user: dict = Depends(get_current_user)
+
 ):
 
     file_location = f"uploads/{file.filename}"
