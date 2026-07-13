@@ -275,3 +275,26 @@ def dashboard_stats(
         "average_ats": round(average_ats, 2),
         "best_match": best_match
     }
+@app.get("/my-resumes")
+def get_my_resumes(
+    current_user: dict = Depends(get_current_user)
+):
+
+    resumes = list(
+        candidates_collection.find(
+            {
+                "user_id": current_user["sub"]
+            },
+            {
+                "_id": 1,
+                "filename": 1,
+                "ats_score": 1,
+                "semantic_score": 1
+            }
+        )
+    )
+
+    for resume in resumes:
+        resume["_id"] = str(resume["_id"])
+
+    return resumes
