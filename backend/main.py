@@ -234,3 +234,44 @@ def login(user: UserLogin):
         "access_token": access_token,
         "token_type": "bearer"
     }
+@app.get("/dashboard/stats")
+def dashboard_stats(
+    current_user: dict = Depends(get_current_user)
+):
+
+    total = candidates_collection.count_documents(
+        {
+            "user_id": current_user["sub"]
+        }
+    )
+
+    resumes = list(
+        candidates_collection.find(
+            {
+                "user_id": current_user["sub"]
+            }
+        )
+    )
+
+    if len(resumes) == 0:
+        return {
+            "total_resumes": 0,
+            "average_ats": 0,
+            "best_match": 0
+        }
+
+    average_ats = sum(
+        resume["ats_score"]
+        for resume in resumes
+    ) / len(resumes)
+
+    best_match = max(
+        resume["semantic_score"]
+        for resume in resumes
+    )
+
+    return {
+        "total_resumes": total,
+        "average_ats": round(average_ats, 2),
+        "best_match": best_match
+    }
