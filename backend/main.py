@@ -321,3 +321,19 @@ def get_resume(
     resume["_id"] = str(resume["_id"])
 
     return resume
+@app.delete("/resume/{resume_id}")
+def delete_resume(
+    resume_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+
+    candidates_collection.delete_one(
+        {
+            "_id": ObjectId(resume_id),
+            "user_id": current_user["sub"]
+        }
+    )
+
+    return {
+        "message":"Resume deleted"
+    }
