@@ -298,3 +298,26 @@ def get_my_resumes(
         resume["_id"] = str(resume["_id"])
 
     return resumes
+from bson import ObjectId
+
+@app.get("/resume/{resume_id}")
+def get_resume(
+    resume_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+
+    resume = candidates_collection.find_one(
+        {
+            "_id": ObjectId(resume_id),
+            "user_id": current_user["sub"]
+        }
+    )
+
+    if not resume:
+        return {
+            "message":"Resume not found"
+        }
+
+    resume["_id"] = str(resume["_id"])
+
+    return resume
