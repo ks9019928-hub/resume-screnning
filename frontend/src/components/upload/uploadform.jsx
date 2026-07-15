@@ -1,9 +1,11 @@
 import { useState } from "react";
+import API from "../../services/api";
 
 function UploadForm() {
   const [file, setFile] = useState(null);
   const [jobDescription, setJobDescription] = useState("");
-
+  const [loading, setLoading] = useState(false);
+  
   return (
     <div className="bg-white rounded-2xl shadow-lg p-8">
 
