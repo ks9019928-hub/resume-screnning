@@ -1,8 +1,10 @@
 import Navbar from "../components/layout/Navbar";
 import Sidebar from "../components/layout/Sidebar";
 import UploadForm from "../components/upload/UploadForm";
+import { useState } from "react";
 
 function Dashboard() {
+    const [result, setResult] = useState(null);
 
   return (
 
@@ -20,7 +22,21 @@ function Dashboard() {
   Dashboard
 </h1>
 
-<UploadForm />
+{/* Upload Component */}
+
+          <UploadForm setResult={setResult} />
+
+          {/* Later we'll replace this JSON with cards */}
+
+          {result && (
+
+            <pre className="mt-8 bg-black text-green-400 p-6 rounded-xl overflow-auto">
+
+              {JSON.stringify(result, null, 2)}
+
+            </pre>
+
+          )}
 
         </main>
 
@@ -31,5 +47,4 @@ function Dashboard() {
   );
 
 }
-
 export default Dashboard;
