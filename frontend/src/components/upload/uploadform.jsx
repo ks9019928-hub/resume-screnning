@@ -1,11 +1,11 @@
 import { useState } from "react";
 import API from "../../services/api";
 
-function UploadForm() {
+function UploadForm({ setResult }) {
   const [file, setFile] = useState(null);
   const [jobDescription, setJobDescription] = useState("");
   const [loading, setLoading] = useState(false);
-  
+
   return (
     <div className="bg-white rounded-2xl shadow-lg p-8">
 
@@ -28,10 +28,11 @@ function UploadForm() {
       />
 
       <button
-        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl"
-      >
-        Analyze Resume
-      </button>
+    onClick={handleAnalyze}
+    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl"
+>
+    {loading ? "Analyzing..." : "Analyze Resume"}
+</button>
 
       {file && (
         <p className="mt-4 text-green-600">
@@ -42,5 +43,47 @@ function UploadForm() {
     </div>
   );
 }
+const handleAnalyze = async () => {
+
+    if (!file || !jobDescription) {
+        alert("Please upload resume and enter job description");
+        return;
+    }
+
+    const formData = new FormData();
+
+    formData.append("file", file);
+    formData.append("job_description", jobDescription);
+
+    try {
+
+        setLoading(true);
+
+        const token = localStorage.getItem("token");
+
+        const response = await API.post(
+            "/analyze-resume",
+            formData,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "multipart/form-data"
+                }
+            }
+        );
+
+        setResult(response.data);
+
+    } catch (error) {
+
+        console.error(error);
+
+    } finally {
+
+        setLoading(false);
+
+    }
+
+};
 
 export default UploadForm;
