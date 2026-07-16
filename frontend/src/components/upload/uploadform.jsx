@@ -1,10 +1,10 @@
 import { useState } from "react";
 import API from "../../services/api";
 
-function UploadForm({ setResult }) {
+function UploadForm({ handleAnalyze, loading })  {
   const [file, setFile] = useState(null);
-  const [jobDescription, setJobDescription] = useState("");
-  const [loading, setLoading] = useState(false);
+
+const [jobDescription, setJobDescription] = useState("");
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-8">
