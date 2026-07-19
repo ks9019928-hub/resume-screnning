@@ -4,6 +4,7 @@ import UploadForm from "../components/upload/UploadForm";
 import { useState } from "react";
 import API from "../services/api";
 import ScoreCard from "../components/dashboard/ScoreCard";
+import ResumeOverview from "../components/dashboard/ResumeOverview";
 
 function Dashboard() {
     const [result, setResult] = useState(null);
@@ -79,7 +80,7 @@ const handleAnalyze = async (file, jobDescription) => {
           {/* Later we'll replace this JSON with cards */}
 
           {result && (
-
+<>
 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-10">
 
     <ScoreCard
@@ -107,7 +108,9 @@ const handleAnalyze = async (file, jobDescription) => {
     />
 
 </div>
-
+ <ResumeOverview result={result} />
+</>
+  
 )}
 
         </main>
