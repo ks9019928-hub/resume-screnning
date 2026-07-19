@@ -80,13 +80,35 @@ const handleAnalyze = async (file, jobDescription) => {
 
           {result && (
 
-            <pre className="mt-8 bg-black text-green-400 p-6 rounded-xl overflow-auto">
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-10">
 
-              {JSON.stringify(result, null, 2)}
+    <ScoreCard
+        title="ATS Score"
+        value={`${result.ats_analysis.ats_score}%`}
+        color="text-blue-600"
+    />
 
-            </pre>
+    <ScoreCard
+        title="Semantic Match"
+        value={`${result.semantic_match}%`}
+        color="text-green-600"
+    />
 
-          )}
+    <ScoreCard
+        title="Skills"
+        value={result.skills.length}
+        color="text-purple-600"
+    />
+
+    <ScoreCard
+        title="Recommendations"
+        value={result.recommendations.length}
+        color="text-orange-600"
+    />
+
+</div>
+
+)}
 
         </main>
 
