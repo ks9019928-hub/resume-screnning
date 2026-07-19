@@ -3,6 +3,7 @@ import Sidebar from "../components/layout/Sidebar";
 import UploadForm from "../components/upload/UploadForm";
 import { useState } from "react";
 import API from "../services/api";
+import ScoreCard from "../components/dashboard/ScoreCard";
 
 function Dashboard() {
     const [result, setResult] = useState(null);
