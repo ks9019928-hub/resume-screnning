@@ -6,6 +6,7 @@ import API from "../services/api";
 import ScoreCard from "../components/dashboard/ScoreCard";
 import ResumeOverview from "../components/dashboard/ResumeOverview";
 import SkillsCard from "../components/dashboard/SkillsCard";
+import RecommendationCard from "../components/dashboard/RecommendationCard";
 
 function Dashboard() {
     const [result, setResult] = useState(null);
@@ -111,6 +112,11 @@ const handleAnalyze = async (file, jobDescription) => {
 </div>
 <SkillsCard skills={result.skills} />
  <ResumeOverview result={result} />
+ <RecommendationCard
+
+    recommendations={result.recommendations}
+
+/>
 </>
   
 )}
