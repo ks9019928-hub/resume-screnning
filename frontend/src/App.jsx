@@ -1,7 +1,10 @@
+import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 
-function App() {
-  return <Dashboard />;
-}
-
-export default App;
+<BrowserRouter>
+  <Routes>
+    <Route path="/" element={<Login />} />
+    <Route path="/login" element={<Login />} />
+    <Route path="/dashboard" element={<Dashboard />} />
+  </Routes>
+</BrowserRouter>
