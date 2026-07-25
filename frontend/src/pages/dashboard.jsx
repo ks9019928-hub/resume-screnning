@@ -8,10 +8,13 @@ import ResumeOverview from "../components/dashboard/ResumeOverview";
 import SkillsCard from "../components/dashboard/SkillsCard";
 import RecommendationCard from "../components/dashboard/RecommendationCard";
 import ChatBox from "../components/chat/ChatBox";
+import { useEffect, useState } from "react";
+import { getDashboardStats } from "../services/dashboard";
 
 function Dashboard() {
     const [result, setResult] = useState(null);
     const [result, setResult] = useState(null);
+    const [stats, setStats] = useState(null);
 
 const [loading, setLoading] = useState(false);
 const handleAnalyze = async (file, jobDescription) => {
@@ -20,6 +23,27 @@ const handleAnalyze = async (file, jobDescription) => {
         alert("Please upload resume and enter job description");
         return;
     }
+    useEffect(() => {
+
+    const loadStats = async () => {
+
+        try {
+
+            const data = await getDashboardStats();
+
+            setStats(data);
+
+        } catch (err) {
+
+            console.error(err);
+
+        }
+
+    };
+
+    loadStats();
+
+}, []);
 
     const formData = new FormData();
 
