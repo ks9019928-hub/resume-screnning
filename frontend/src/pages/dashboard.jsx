@@ -10,6 +10,7 @@ import RecommendationCard from "../components/dashboard/RecommendationCard";
 import ChatBox from "../components/chat/ChatBox";
 import { useEffect, useState } from "react";
 import { getDashboardStats } from "../services/dashboard";
+import ResumeHistory from "../components/dashboard/ResumeHistory";
 
 function Dashboard() {
     const [result, setResult] = useState(null);
@@ -142,6 +143,7 @@ const handleAnalyze = async (file, jobDescription) => {
     recommendations={result.recommendations}
 
 /><ChatBox />
+<ResumeHistory />
 </>
   
 )}
