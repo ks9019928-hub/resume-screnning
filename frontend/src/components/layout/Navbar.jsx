@@ -1,4 +1,8 @@
 function Navbar() {
+  const handleLogout = () => {
+  localStorage.removeItem("token");
+  window.location.href = "/login";
+};
   return (
     <nav className="bg-slate-900 text-white h-16 flex items-center justify-between px-8 shadow-lg">
 
@@ -19,7 +23,12 @@ function Navbar() {
         <button className="hover:text-red-400">
           Logout
         </button>
-
+<button
+  onClick={handleLogout}
+  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"
+>
+  Logout
+</button>
       </div>
 
     </nav>
