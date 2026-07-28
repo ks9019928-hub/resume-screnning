@@ -337,3 +337,20 @@ def delete_resume(
     return {
         "message":"Resume deleted"
     }
+@app.get("/resume/history")
+def resume_history(
+    current_user: dict = Depends(get_current_user)
+):
+
+    resumes = list(
+        candidates_collection.find(
+            {
+                "user_id": current_user["sub"]
+            },
+            {
+                "_id": 0
+            }
+        )
+    )
+
+    return resumes
