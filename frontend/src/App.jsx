@@ -1,6 +1,10 @@
 import Login from "./pages/Login";
 import Dashboard from "./pages/DashBoard";
-import ProtectedRoute from "./routes/ProtectedRoute";
+import ProtectedRoute from "./routes/ProtectedRoute";import Home from "./pages/Home";
+
+export default function App() {
+  return <Home />;
+}
 
 <BrowserRouter>
   <Routes>
