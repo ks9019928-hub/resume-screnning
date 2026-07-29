@@ -1,10 +1,10 @@
 import { motion } from "framer-motion";
 import {
-  Instagram,
-  Linkedin,
-  Twitter,
   Menu,
   X,
+  Home,
+  Search,
+  Bell,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -73,16 +73,16 @@ export default function Navbar() {
         <div className="hidden lg:flex items-center gap-3">
 
           <GlassIcon>
-            <Instagram size={18} />
-          </GlassIcon>
+  <Home size={18} />
+</GlassIcon>
 
-          <GlassIcon>
-            <Linkedin size={18} />
-          </GlassIcon>
+<GlassIcon>
+  <Search size={18} />
+</GlassIcon>
 
-          <GlassIcon>
-            <Twitter size={18} />
-          </GlassIcon>
+<GlassIcon>
+  <Bell size={18} />
+</GlassIcon>
 
         </div>
 
@@ -118,16 +118,16 @@ export default function Navbar() {
             <div className="flex gap-4 pt-4">
 
               <GlassIcon>
-                <Instagram size={18} />
-              </GlassIcon>
+  <Home size={18} />
+</GlassIcon>
 
-              <GlassIcon>
-                <Linkedin size={18} />
-              </GlassIcon>
+<GlassIcon>
+  <Search size={18} />
+</GlassIcon>
 
-              <GlassIcon>
-                <Twitter size={18} />
-              </GlassIcon>
+<GlassIcon>
+  <Bell size={18} />
+</GlassIcon>
 
             </div>
 

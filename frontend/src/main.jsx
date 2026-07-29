@@ -1,25 +1,13 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
 
-import Dashboard from "./pages/Dashboard";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
+import "./index.css";
+import "@fontsource/inter";
+import "@fontsource/instrument-serif";
 
-function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-
-        <Route path="/" element={<Login />} />
-
-        <Route path="/login" element={<Login />} />
-
-        <Route path="/register" element={<Register />} />
-
-        <Route path="/dashboard" element={<Dashboard />} />
-
-      </Routes>
-    </BrowserRouter>
-  );
-}
-
-export default App;
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
