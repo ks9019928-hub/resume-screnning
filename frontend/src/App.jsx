@@ -1,5 +1,5 @@
 import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
+import Dashboard from "./pages/DashBoard";
 import ProtectedRoute from "./routes/ProtectedRoute";
 
 <BrowserRouter>
