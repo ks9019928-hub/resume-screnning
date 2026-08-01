@@ -1,5 +1,15 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import Dashboard from "./pages/Dashboard";
 import Home from "./pages/Home";
 
 export default function App() {
-  return <Home />;
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/landing" element={<Home />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
