@@ -150,3 +150,7 @@ export default function UploadForm({
     </div>
   );
 }
+
+<span className="mt-2 inline-block rounded-full bg-green-600 px-3 py-1 text-xs font-semibold text-white">
+  ✓ Ready for Analysis
+</span>
