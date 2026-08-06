@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, Github, Twitter, Chrome } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Globe, MessageCircle, Monitor } from 'lucide-react';
 
 export default function DarkThemeLogin() {
   const [showPassword, setShowPassword] = useState(false);
@@ -152,7 +152,7 @@ export default function DarkThemeLogin() {
                   className="w-full inline-flex justify-center py-2.5 px-4 border border-gray-700 rounded-lg shadow-sm bg-[#1a1a1a] text-sm font-medium text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
                 >
                   <span className="sr-only">Sign in with Google</span>
-                  <Chrome className="w-5 h-5" />
+                  <Globe className="w-5 h-5"/>
                 </a>
               </div>
 
@@ -162,7 +162,7 @@ export default function DarkThemeLogin() {
                   className="w-full inline-flex justify-center py-2.5 px-4 border border-gray-700 rounded-lg shadow-sm bg-[#1a1a1a] text-sm font-medium text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
                 >
                   <span className="sr-only">Sign in with Twitter</span>
-                  <Twitter className="w-5 h-5" />
+                  <MessageCircle className="w-5 h-5"/>
                 </a>
               </div>
 
@@ -172,7 +172,7 @@ export default function DarkThemeLogin() {
                   className="w-full inline-flex justify-center py-2.5 px-4 border border-gray-700 rounded-lg shadow-sm bg-[#1a1a1a] text-sm font-medium text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
                 >
                   <span className="sr-only">Sign in with GitHub</span>
-                  <Github className="w-5 h-5" />
+                  <Monitor className="w-5 h-5"/>
                 </a>
               </div>
             </div>
