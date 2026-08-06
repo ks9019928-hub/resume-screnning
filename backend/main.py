@@ -161,7 +161,9 @@ async def analyze_resume(
         "filename": file.filename,
         "skills": skills,
         "semantic_score": semantic_score,
-        "ats_score": ats_result["ats_score"]
+        "ats_score": ats_result["ats_score"],
+        # CORRECTION: Link the resume to the current user's ID
+        "user_id": current_user["sub"] 
     }
 
     candidates_collection.insert_one(candidate_data)
