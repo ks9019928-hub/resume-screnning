@@ -1,28 +1,23 @@
-def calculate(resume_skill,jd_text):
-    jd_text=jd.lower()
-    required_skills=[]
-    comman_skills=[
-         "python",
-        "java",
-        "sql",
-        "react",
-        "aws",
-        "docker",
-        "machine learning",
-        "nlp",
-        "mongodb",
-        "fastapi"
+def calculate(resume_skill, jd_text):
+    # CORRECTION: Change 'jd.lower()' to 'jd_text.lower()'
+    jd_text = jd_text.lower()
+    required_skills = []
+    comman_skills = [
+         "python", "java", "sql", "react", "aws", "docker",
+         "machine learning", "nlp", "mongodb", "fastapi"
     ]
     for skills in comman_skills:
         if skills in jd_text:
             required_skills.append(skills)
-    matched_skills=[]
-    missing_skills=[]
+            
+    matched_skills = []
+    missing_skills = []
     for skills in required_skills:
         if skills in resume_skill:
             matched_skills.append(skills)
         else:
             missing_skills.append(skills)
+            
     if len(required_skills) == 0:
         score = 50
     else:
@@ -39,8 +34,10 @@ def calculate(resume_skill,jd_text):
         recommendations.append(
             "Resume has low ATS match for this role"
         )
-        if score >= 80:
-         recommendations.append(
+        
+    # CORRECTION: Un-nest this block so it evaluates independently
+    if score >= 80:
+        recommendations.append(
             "Strong ATS alignment detected"
         )
 
