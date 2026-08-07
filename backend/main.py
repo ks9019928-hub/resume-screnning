@@ -171,13 +171,24 @@ async def analyze_resume(
     os.remove(file_location)
 
     return {
+    "success": True,
+
+    "resume": {
         "filename": file.filename,
+        "preview": extracted_text[:1000]
+    },
+
+    "analysis": {
         "skills": skills,
         "semantic_match": semantic_score,
-        "ats_analysis": ats_result,
-        "recommendations": recommendations,
-        "resume_preview": extracted_text[:1000]
-    }
+        "ats_score": ats_result["ats_score"],
+        "keyword_score": ats_result["keyword_score"],
+        "format_score": ats_result["format_score"],
+        "experience_score": ats_result["experience_score"]
+    },
+
+    "recommendations": recommendations
+}
 @app.post("/register")
 def register(user: UserRegister):
 
