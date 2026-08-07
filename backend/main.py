@@ -32,7 +32,7 @@ class JDRequest(BaseModel):
     job_description: str
 
 class ChatRequest(BaseModel):
-    resume_text: str
+    resume_id: str
     question: str
 
 class UserRegister(BaseModel):
