@@ -1,49 +1,160 @@
-from sentence_transformers import SentenceTransformer
-import faiss
-import numpy as np
+# backend/services/rag.py
 
-model = SentenceTransformer("all-MiniLM-L6-v2")
+import re
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+
+
+# ============================================================
+# EMBEDDING MODEL
+# ============================================================
+
+model = SentenceTransformer(
+    "all-MiniLM-L6-v2"
+)
+
+
+# ============================================================
+# IN-MEMORY RESUME STORAGE
+# ============================================================
 
 resume_chunks = []
 
-index = faiss.IndexFlatL2(384)
 
+# ============================================================
+# TEXT CHUNKING
+# ============================================================
 
-def chunk_text(text, chunk_size=300):
+def chunk_text(
+    text: str,
+    chunk_size: int = 500
+) -> list:
+    """
+    Split resume text into smaller chunks.
+    """
+
+    if not text:
+        return []
+
+    # Normalize whitespace
+    text = re.sub(
+        r"\s+",
+        " ",
+        text
+    ).strip()
+
+    words = text.split()
 
     chunks = []
 
-    for i in range(0, len(text), chunk_size):
-        chunks.append(text[i:i + chunk_size])
+    for i in range(
+        0,
+        len(words),
+        chunk_size
+    ):
+
+        chunk = " ".join(
+            words[i:i + chunk_size]
+        )
+
+        if chunk.strip():
+            chunks.append(chunk)
 
     return chunks
 
-def store_resume_embeddings(text):
+
+# ============================================================
+# STORE RESUME EMBEDDINGS
+# ============================================================
+
+def store_resume_embeddings(
+    resume_text: str
+):
+    """
+    Create embeddings for resume chunks
+    and store them in memory.
+
+    Returns the created chunks.
+    """
 
     global resume_chunks
 
-    chunks = chunk_text(text)
-
-    embeddings = model.encode(chunks)
-
-    index.add(np.array(embeddings).astype("float32"))
-
-    resume_chunks = chunks
-
-def retrieve_relevant_chunks(query, top_k=3):
-
-    query_embedding = model.encode([query])
-
-    distances, indices = index.search(
-        np.array(query_embedding).astype("float32"),
-        top_k
+    chunks = chunk_text(
+        resume_text
     )
 
-    results = []
+    if not chunks:
+        resume_chunks = []
+        return []
 
-    for idx in indices[0]:
+    embeddings = model.encode(
+        chunks
+    )
 
-        if idx < len(resume_chunks):
-            results.append(resume_chunks[idx])
+    resume_chunks = []
 
-    return "\n".join(results)
+    for chunk, embedding in zip(
+        chunks,
+        embeddings
+    ):
+
+        resume_chunks.append({
+
+            "text": chunk,
+
+            "embedding": embedding
+        })
+
+    return resume_chunks
+
+
+# ============================================================
+# RETRIEVE RELEVANT CHUNKS
+# ============================================================
+
+def retrieve_relevant_chunks(
+    question: str,
+    top_k: int = 3
+) -> str:
+    """
+    Retrieve the most relevant resume chunks
+    for the user's question.
+    """
+
+    if not question:
+        return ""
+
+    if not resume_chunks:
+        return ""
+
+    question_embedding = model.encode(
+        [question]
+    )[0]
+
+    similarities = []
+
+    for item in resume_chunks:
+
+        score = cosine_similarity(
+            [question_embedding],
+            [item["embedding"]]
+        )[0][0]
+
+        similarities.append(
+            (
+                score,
+                item["text"]
+            )
+        )
+
+    similarities.sort(
+        key=lambda x: x[0],
+        reverse=True
+    )
+
+    selected = similarities[:top_k]
+
+    return "\n\n".join(
+        item[1]
+        for item in selected
+    )
