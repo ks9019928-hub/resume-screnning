@@ -199,9 +199,6 @@ resume context and conversation history.
             f"Error: {str(e)}"
         )
 
-    # --------------------------------------------------------
-    # Save conversation
-    # --------------------------------------------------------
 
     conversation_history.append({
 
