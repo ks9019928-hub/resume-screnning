@@ -38,6 +38,7 @@ HARD_SKILLS = {
         "Bootstrap",
         "Redux",
         "REST API",
+        "RESTful API",
         "GraphQL"
     ],
 
@@ -82,7 +83,9 @@ HARD_SKILLS = {
         "Computer Vision",
         "Generative AI",
         "Large Language Models",
-        "LLM"
+        "LLM",
+        "Artificial Intelligence",
+        "AI"
     ],
 
     "data_analysis": [
@@ -147,7 +150,8 @@ HARD_SKILLS = {
         "System Design",
         "Software Development",
         "Unit Testing",
-        "API Development"
+        "API Development",
+        "Software Testing"
     ],
 
     "tools": [
@@ -290,6 +294,12 @@ JOB_ROLES = [
 SKILLS = []
 
 for category in HARD_SKILLS.values():
-    SKILLS.extend(category)
 
-SKILLS = list(dict.fromkeys(SKILLS))
+    SKILLS.extend(
+        category
+    )
+
+# Remove duplicates while preserving order
+SKILLS = list(
+    dict.fromkeys(SKILLS)
+)
