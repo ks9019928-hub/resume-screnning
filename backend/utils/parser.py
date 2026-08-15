@@ -1,5 +1,6 @@
 import os
 import re
+
 import pdfplumber
 from docx import Document
 
@@ -12,7 +13,8 @@ from data.skills import SKILLS
 
 def clean_text(text: str) -> str:
     """
-    Clean and normalize extracted resume text.
+    Clean and normalize extracted resume text while
+    preserving useful line breaks.
     """
 
     if not text:
@@ -28,10 +30,30 @@ def clean_text(text: str) -> str:
         text
     )
 
-    # Normalize whitespace
-    text = re.sub(r"\s+", " ", text)
+    # Normalize line endings
+    text = text.replace("\r\n", "\n")
+    text = text.replace("\r", "\n")
 
-    return text.strip()
+    # Clean each line
+    lines = []
+
+    for line in text.split("\n"):
+
+        line = re.sub(
+            r"[ \t]+",
+            " ",
+            line
+        )
+
+        line = line.strip()
+
+        if line:
+            lines.append(line)
+
+    # Remove excessive blank lines
+    cleaned = "\n".join(lines)
+
+    return cleaned.strip()
 
 
 # ============================================================
@@ -40,12 +62,19 @@ def clean_text(text: str) -> str:
 
 def extract_pdf_text(pdf_path: str) -> str:
     """
-    Extract text from a PDF resume.
+    Extract text from a PDF resume using pdfplumber.
     """
+
+    if not os.path.exists(pdf_path):
+
+        raise FileNotFoundError(
+            f"PDF file not found: {pdf_path}"
+        )
 
     text_parts = []
 
     try:
+
         with pdfplumber.open(pdf_path) as pdf:
 
             for page in pdf.pages:
@@ -53,9 +82,12 @@ def extract_pdf_text(pdf_path: str) -> str:
                 extracted = page.extract_text()
 
                 if extracted:
-                    text_parts.append(extracted)
+                    text_parts.append(
+                        extracted
+                    )
 
     except Exception as e:
+
         raise ValueError(
             f"Failed to extract PDF text: {str(e)}"
         )
@@ -70,22 +102,44 @@ def extract_pdf_text(pdf_path: str) -> str:
 def extract_docx_text(docx_path: str) -> str:
     """
     Extract text from a DOCX resume.
+
+    Extracts:
+    - Paragraphs
+    - Tables
     """
+
+    if not os.path.exists(docx_path):
+
+        raise FileNotFoundError(
+            f"DOCX file not found: {docx_path}"
+        )
 
     text_parts = []
 
     try:
-        document = Document(docx_path)
 
-        # Extract normal paragraphs
+        document = Document(
+            docx_path
+        )
+
+        # ----------------------------------------------------
+        # Paragraphs
+        # ----------------------------------------------------
+
         for paragraph in document.paragraphs:
 
-            if paragraph.text.strip():
+            text = paragraph.text.strip()
+
+            if text:
+
                 text_parts.append(
-                    paragraph.text
+                    text
                 )
 
-        # Extract tables
+        # ----------------------------------------------------
+        # Tables
+        # ----------------------------------------------------
+
         for table in document.tables:
 
             for row in table.rows:
@@ -94,17 +148,22 @@ def extract_docx_text(docx_path: str) -> str:
 
                 for cell in row.cells:
 
-                    if cell.text.strip():
+                    cell_text = cell.text.strip()
+
+                    if cell_text:
+
                         row_text.append(
-                            cell.text.strip()
+                            cell_text
                         )
 
                 if row_text:
+
                     text_parts.append(
-                        " ".join(row_text)
+                        " | ".join(row_text)
                     )
 
     except Exception as e:
+
         raise ValueError(
             f"Failed to extract DOCX text: {str(e)}"
         )
@@ -118,10 +177,11 @@ def extract_docx_text(docx_path: str) -> str:
 
 def extract_text(file_path: str) -> str:
     """
-    Extract text from PDF or DOCX resume.
+    Automatically extract text from PDF or DOCX.
     """
 
     if not os.path.exists(file_path):
+
         raise FileNotFoundError(
             f"File not found: {file_path}"
         )
@@ -146,12 +206,15 @@ def extract_text(file_path: str) -> str:
 
         raise ValueError(
             "Unsupported file type. "
-            "Only PDF and DOCX are supported."
+            "Only PDF and DOCX files are supported."
         )
 
-    text = clean_text(text)
+    text = clean_text(
+        text
+    )
 
     if not text:
+
         raise ValueError(
             "No readable text found in the resume."
         )
@@ -163,16 +226,16 @@ def extract_text(file_path: str) -> str:
 # SKILL EXTRACTION
 # ============================================================
 
-def extract_skill(text: str):
+def extract_skill(text: str) -> list:
     """
-    Extract skills defined in data/skills.py
-    from the resume text.
+    Extract technical skills defined in
+    data/skills.py.
     """
 
     if not text:
         return []
 
-    text = text.lower()
+    normalized_text = text.lower()
 
     found_skills = []
 
@@ -180,13 +243,22 @@ def extract_skill(text: str):
 
         skill_lower = skill.lower()
 
-        # Prevent partial word matches.
-        pattern = r"(?<!\w)" + re.escape(
-            skill_lower
-        ) + r"(?!\w)"
+        # Prevent partial matches.
+        # Example:
+        # Java should not match JavaScript.
+        pattern = (
+            r"(?<!\w)"
+            + re.escape(skill_lower)
+            + r"(?!\w)"
+        )
 
-        if re.search(pattern, text):
+        if re.search(
+            pattern,
+            normalized_text
+        ):
 
-            found_skills.append(skill)
+            found_skills.append(
+                skill
+            )
 
     return found_skills
