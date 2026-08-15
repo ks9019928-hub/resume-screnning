@@ -14,7 +14,7 @@ from data.skills import (
 
 def normalize_text(text: str) -> str:
     """
-    Normalize resume text for NLP processing.
+    Normalize text for NLP processing.
     """
 
     if not text:
@@ -22,21 +22,29 @@ def normalize_text(text: str) -> str:
 
     text = text.lower()
 
-    # Normalize whitespace
-    text = re.sub(r"\s+", " ", text)
+    text = re.sub(
+        r"\s+",
+        " ",
+        text
+    )
 
     return text.strip()
 
 
 # ============================================================
-# REGEX SKILL MATCHING
+# REGEX MATCHING
 # ============================================================
 
-def find_matches(text: str, items: list) -> list:
+def find_matches(
+    text: str,
+    items: list
+) -> list:
     """
-    Find dictionary items inside resume text.
-    Uses word boundaries to reduce false positives.
+    Find dictionary items inside text.
     """
+
+    if not text:
+        return []
 
     found = []
 
@@ -44,12 +52,20 @@ def find_matches(text: str, items: list) -> list:
 
         pattern = (
             r"(?<!\w)"
-            + re.escape(item.lower())
+            + re.escape(
+                item.lower()
+            )
             + r"(?!\w)"
         )
 
-        if re.search(pattern, text):
-            found.append(item)
+        if re.search(
+            pattern,
+            text
+        ):
+
+            found.append(
+                item
+            )
 
     return found
 
@@ -58,12 +74,13 @@ def find_matches(text: str, items: list) -> list:
 # HARD SKILLS
 # ============================================================
 
-def extract_hard_skills(text: str) -> dict:
-    """
-    Extract technical skills grouped by category.
-    """
+def extract_hard_skills(
+    text: str
+) -> dict:
 
-    normalized = normalize_text(text)
+    normalized = normalize_text(
+        text
+    )
 
     result = {}
 
@@ -75,6 +92,7 @@ def extract_hard_skills(text: str) -> dict:
         )
 
         if matches:
+
             result[category] = matches
 
     return result
@@ -84,12 +102,13 @@ def extract_hard_skills(text: str) -> dict:
 # SOFT SKILLS
 # ============================================================
 
-def extract_soft_skills(text: str) -> list:
-    """
-    Extract soft skills from resume.
-    """
+def extract_soft_skills(
+    text: str
+) -> list:
 
-    normalized = normalize_text(text)
+    normalized = normalize_text(
+        text
+    )
 
     return find_matches(
         normalized,
@@ -101,10 +120,9 @@ def extract_soft_skills(text: str) -> list:
 # EMAIL
 # ============================================================
 
-def extract_email(text: str):
-    """
-    Extract email address.
-    """
+def extract_email(
+    text: str
+):
 
     pattern = r"""
         [a-zA-Z0-9._%+-]+
@@ -121,19 +139,19 @@ def extract_email(text: str):
     )
 
     if match:
+
         return match.group(0)
 
     return None
 
 
 # ============================================================
-# PHONE NUMBER
+# PHONE
 # ============================================================
 
-def extract_phone(text: str):
-    """
-    Extract common phone number formats.
-    """
+def extract_phone(
+    text: str
+):
 
     patterns = [
 
@@ -152,6 +170,7 @@ def extract_phone(text: str):
         )
 
         if match:
+
             return match.group(0)
 
     return None
@@ -161,10 +180,9 @@ def extract_phone(text: str):
 # LINKEDIN
 # ============================================================
 
-def extract_linkedin(text: str):
-    """
-    Extract LinkedIn profile URL.
-    """
+def extract_linkedin(
+    text: str
+):
 
     pattern = (
         r"(https?://)?"
@@ -180,6 +198,7 @@ def extract_linkedin(text: str):
     )
 
     if match:
+
         return match.group(0)
 
     return None
@@ -189,10 +208,9 @@ def extract_linkedin(text: str):
 # GITHUB
 # ============================================================
 
-def extract_github(text: str):
-    """
-    Extract GitHub profile URL.
-    """
+def extract_github(
+    text: str
+):
 
     pattern = (
         r"(https?://)?"
@@ -208,6 +226,7 @@ def extract_github(text: str):
     )
 
     if match:
+
         return match.group(0)
 
     return None
@@ -217,12 +236,13 @@ def extract_github(text: str):
 # EDUCATION
 # ============================================================
 
-def extract_education(text: str) -> list:
-    """
-    Detect education qualifications.
-    """
+def extract_education(
+    text: str
+) -> list:
 
-    normalized = normalize_text(text)
+    normalized = normalize_text(
+        text
+    )
 
     return find_matches(
         normalized,
@@ -234,12 +254,13 @@ def extract_education(text: str) -> list:
 # JOB ROLES
 # ============================================================
 
-def extract_job_roles(text: str) -> list:
-    """
-    Detect common job titles.
-    """
+def extract_job_roles(
+    text: str
+) -> list:
 
-    normalized = normalize_text(text)
+    normalized = normalize_text(
+        text
+    )
 
     return find_matches(
         normalized,
@@ -248,28 +269,24 @@ def extract_job_roles(text: str) -> list:
 
 
 # ============================================================
-# EXPERIENCE YEARS
+# EXPERIENCE
 # ============================================================
 
-def extract_experience_years(text: str):
-    """
-    Extract explicit years of experience.
-
-    Examples:
-        2 years experience
-        3+ years of experience
-        1.5 years experience
-        5 yrs experience
-    """
+def extract_experience_years(
+    text: str
+):
 
     patterns = [
 
-        r"(\d+(?:\.\d+)?)\+?\s*(?:years?|yrs?)"
-        r"\s*(?:of\s*)?(?:professional\s*)?"
+        r"(\d+(?:\.\d+)?)\+?\s*"
+        r"(?:years?|yrs?)"
+        r"\s*(?:of\s*)?"
+        r"(?:professional\s*)?"
         r"experience",
 
         r"experience\s*[:\-]?\s*"
-        r"(\d+(?:\.\d+)?)\+?\s*(?:years?|yrs?)"
+        r"(\d+(?:\.\d+)?)\+?\s*"
+        r"(?:years?|yrs?)"
     ]
 
     values = []
@@ -285,84 +302,417 @@ def extract_experience_years(text: str):
         for match in matches:
 
             try:
+
                 values.append(
                     float(match)
                 )
 
-            except ValueError:
+            except (
+                ValueError,
+                TypeError
+            ):
+
                 pass
 
     if not values:
+
         return 0
 
-    return max(values)
+    return max(
+        values
+    )
 
 
 # ============================================================
 # CONTACT DETAILS
 # ============================================================
 
-def extract_contact_details(text: str) -> dict:
-    """
-    Extract contact information.
-    """
+def extract_contact_details(
+    text: str
+) -> dict:
 
     return {
 
-        "email": extract_email(text),
+        "email":
+            extract_email(text),
 
-        "phone": extract_phone(text),
+        "phone":
+            extract_phone(text),
 
-        "linkedin": extract_linkedin(text),
+        "linkedin":
+            extract_linkedin(text),
 
-        "github": extract_github(text)
+        "github":
+            extract_github(text)
     }
+
+
+# ============================================================
+# SECTION DETECTION
+# ============================================================
+
+def detect_sections(
+    text: str
+) -> dict:
+    """
+    Detect common resume sections.
+    """
+
+    normalized = normalize_text(
+        text
+    )
+
+    sections = {
+
+        "summary": [
+            "summary",
+            "professional summary",
+            "profile",
+            "objective"
+        ],
+
+        "experience": [
+            "experience",
+            "work experience",
+            "professional experience",
+            "employment"
+        ],
+
+        "education": [
+            "education",
+            "academic background",
+            "qualifications"
+        ],
+
+        "skills": [
+            "skills",
+            "technical skills",
+            "core skills",
+            "technologies"
+        ],
+
+        "projects": [
+            "projects",
+            "personal projects",
+            "academic projects"
+        ],
+
+        "certifications": [
+            "certifications",
+            "certificates"
+        ]
+    }
+
+    detected = {}
+
+    for section, keywords in sections.items():
+
+        detected[section] = any(
+            keyword in normalized
+            for keyword in keywords
+        )
+
+    return detected
+
+
+# ============================================================
+# FORMAT SCORE
+# ============================================================
+
+def calculate_format_score(
+    text: str
+) -> float:
+    """
+    Estimate resume formatting/readability quality.
+
+    This is not a visual PDF parser. It evaluates
+    extracted text structure.
+    """
+
+    if not text:
+
+        return 0
+
+    score = 0
+
+    sections = detect_sections(
+        text
+    )
+
+    # Useful resume sections
+    important_sections = [
+        "summary",
+        "experience",
+        "education",
+        "skills",
+        "projects"
+    ]
+
+    section_count = sum(
+        sections.get(section, False)
+        for section in important_sections
+    )
+
+    score += min(
+        section_count * 12,
+        60
+    )
+
+    # Reasonable text length
+    word_count = len(
+        text.split()
+    )
+
+    if 150 <= word_count <= 1500:
+
+        score += 20
+
+    elif 80 <= word_count < 150:
+
+        score += 10
+
+    # Contact information
+    contact = extract_contact_details(
+        text
+    )
+
+    if contact["email"]:
+        score += 5
+
+    if contact["phone"]:
+        score += 5
+
+    if contact["linkedin"] or contact["github"]:
+        score += 5
+
+    # Avoid extremely long lines / obvious extraction problems
+    lines = [
+        line.strip()
+        for line in text.split("\n")
+        if line.strip()
+    ]
+
+    if lines:
+
+        long_lines = sum(
+            len(line) > 250
+            for line in lines
+        )
+
+        if long_lines == 0:
+
+            score += 5
+
+    return round(
+        min(score, 100),
+        2
+    )
+
+
+# ============================================================
+# EXPERIENCE SCORE
+# ============================================================
+
+def calculate_experience_score(
+    text: str
+) -> float:
+    """
+    Estimate experience section completeness.
+    """
+
+    if not text:
+
+        return 0
+
+    sections = detect_sections(
+        text
+    )
+
+    score = 0
+
+    if sections["experience"]:
+
+        score += 50
+
+    experience_years = extract_experience_years(
+        text
+    )
+
+    if experience_years > 0:
+
+        score += 30
+
+    # Strong achievement indicators
+    achievement_words = [
+        "developed",
+        "built",
+        "implemented",
+        "designed",
+        "optimized",
+        "automated",
+        "improved",
+        "increased",
+        "reduced",
+        "deployed"
+    ]
+
+    normalized = normalize_text(
+        text
+    )
+
+    action_count = sum(
+        word in normalized
+        for word in achievement_words
+    )
+
+    score += min(
+        action_count * 5,
+        20
+    )
+
+    return round(
+        min(score, 100),
+        2
+    )
+
+
+# ============================================================
+# COMPLETENESS SCORE
+# ============================================================
+
+def calculate_completeness_score(
+    text: str
+) -> float:
+    """
+    Estimate how complete the resume is.
+    """
+
+    if not text:
+
+        return 0
+
+    score = 0
+
+    contact = extract_contact_details(
+        text
+    )
+
+    if contact["email"]:
+        score += 15
+
+    if contact["phone"]:
+        score += 10
+
+    if contact["linkedin"]:
+        score += 5
+
+    if contact["github"]:
+        score += 5
+
+    sections = detect_sections(
+        text
+    )
+
+    if sections["summary"]:
+        score += 10
+
+    if sections["experience"]:
+        score += 20
+
+    if sections["education"]:
+        score += 15
+
+    if sections["skills"]:
+        score += 10
+
+    if sections["projects"]:
+        score += 10
+
+    return round(
+        min(score, 100),
+        2
+    )
 
 
 # ============================================================
 # COMPLETE RESUME NLP ANALYSIS
 # ============================================================
 
-def analyze_resume(text: str) -> dict:
-    """
-    Run complete NLP analysis on a resume.
-    """
+def analyze_resume(
+    text: str
+) -> dict:
 
-    hard_skills = extract_hard_skills(text)
+    hard_skills = extract_hard_skills(
+        text
+    )
 
-    soft_skills = extract_soft_skills(text)
+    soft_skills = extract_soft_skills(
+        text
+    )
 
-    education = extract_education(text)
+    education = extract_education(
+        text
+    )
 
-    job_roles = extract_job_roles(text)
+    job_roles = extract_job_roles(
+        text
+    )
 
-    experience_years = extract_experience_years(text)
+    experience_years = extract_experience_years(
+        text
+    )
 
-    contact = extract_contact_details(text)
+    contact = extract_contact_details(
+        text
+    )
+
+    sections = detect_sections(
+        text
+    )
 
     # Flatten hard skills
     all_hard_skills = []
 
     for skills in hard_skills.values():
-        all_hard_skills.extend(skills)
+
+        all_hard_skills.extend(
+            skills
+        )
+
+    all_hard_skills = list(
+        dict.fromkeys(
+            all_hard_skills
+        )
+    )
 
     return {
 
-        "hard_skills": all_hard_skills,
+        "hard_skills":
+            all_hard_skills,
 
-        "skills_by_category": hard_skills,
+        "skills_by_category":
+            hard_skills,
 
-        "soft_skills": soft_skills,
+        "soft_skills":
+            soft_skills,
 
-        "experience_years": experience_years,
+        "experience_years":
+            experience_years,
 
-        "education": education,
+        "education":
+            education,
 
-        "job_roles": job_roles,
+        "job_roles":
+            job_roles,
 
-        "contact": contact,
+        "contact":
+            contact,
 
-        "total_skills": len(all_hard_skills)
+        "sections":
+            sections,
+
+        "total_skills":
+            len(all_hard_skills)
     }
 
 
@@ -372,58 +722,96 @@ def analyze_resume(text: str) -> dict:
 
 def calculate(
     skills,
-    job_description: str
+    job_description: str = "",
+    resume_text: str = ""
 ) -> dict:
     """
-    Calculate ATS score against a job description.
+    Calculate ATS score.
 
-    Returns:
-        ATS score
-        matched skills
-        missing skills
-        keyword score
+    With JD:
+        Keyword matching + completeness +
+        formatting + experience.
+
+    Without JD:
+        Completeness + formatting +
+        experience.
     """
 
-    if not job_description:
+    # --------------------------------------------------------
+    # Base resume scores
+    # --------------------------------------------------------
+
+    format_score = calculate_format_score(
+        resume_text
+    )
+
+    experience_score = calculate_experience_score(
+        resume_text
+    )
+
+    completeness_score = calculate_completeness_score(
+        resume_text
+    )
+
+    # --------------------------------------------------------
+    # No Job Description
+    # --------------------------------------------------------
+
+    if not job_description or not job_description.strip():
+
+        ats_score = (
+            completeness_score * 0.40
+            +
+            format_score * 0.35
+            +
+            experience_score * 0.25
+        )
 
         return {
 
-            "ats_score": 0,
+            "ats_score":
+                round(
+                    ats_score,
+                    2
+                ),
 
             "keyword_score": 0,
 
+            "format_score":
+                format_score,
+
+            "experience_score":
+                experience_score,
+
+            "completeness_score":
+                completeness_score,
+
             "matched_skills": [],
 
-            "missing_skills": []
+            "missing_skills": [],
+
+            "required_skills": [],
+
+            "has_job_description": False
         }
+
+    # --------------------------------------------------------
+    # Job Description Analysis
+    # --------------------------------------------------------
 
     jd_text = normalize_text(
         job_description
     )
 
-    resume_skills = [
+    resume_skills = {
         skill.lower()
         for skill in skills
-    ]
+    }
 
-    matched_skills = []
+    # --------------------------------------------------------
+    # Extract JD skills
+    # --------------------------------------------------------
 
-    for skill in skills:
-
-        pattern = (
-            r"(?<!\w)"
-            + re.escape(skill.lower())
-            + r"(?!\w)"
-        )
-
-        if re.search(
-            pattern,
-            jd_text
-        ):
-
-            matched_skills.append(skill)
-
-    # Extract technical skills from JD
     jd_skills = []
 
     for category in HARD_SKILLS.values():
@@ -435,10 +823,29 @@ def calculate(
             )
         )
 
-    # Remove duplicates
     jd_skills = list(
-        dict.fromkeys(jd_skills)
+        dict.fromkeys(
+            jd_skills
+        )
     )
+
+    # --------------------------------------------------------
+    # Matched skills
+    # --------------------------------------------------------
+
+    matched_skills = []
+
+    for skill in jd_skills:
+
+        if skill.lower() in resume_skills:
+
+            matched_skills.append(
+                skill
+            )
+
+    # --------------------------------------------------------
+    # Missing skills
+    # --------------------------------------------------------
 
     missing_skills = [
 
@@ -450,32 +857,98 @@ def calculate(
         not in resume_skills
     ]
 
+    # --------------------------------------------------------
+    # Keyword score
+    # --------------------------------------------------------
+
     if jd_skills:
 
         keyword_score = (
+
             len(matched_skills)
-            / len(jd_skills)
+            /
+            len(jd_skills)
+
         ) * 100
 
     else:
 
         keyword_score = 0
 
+    keyword_score = round(
+        keyword_score,
+        2
+    )
+
+    # --------------------------------------------------------
+    # Final ATS score
+    # --------------------------------------------------------
+
+    if jd_skills:
+
+        ats_score = (
+
+            keyword_score * 0.55
+
+            +
+
+            completeness_score * 0.20
+
+            +
+
+            format_score * 0.15
+
+            +
+
+            experience_score * 0.10
+        )
+
+    else:
+
+        # JD exists but no recognizable
+        # technical skills were detected.
+        ats_score = (
+
+            completeness_score * 0.40
+
+            +
+
+            format_score * 0.35
+
+            +
+
+            experience_score * 0.25
+        )
+
     return {
 
-        "ats_score": round(
+        "ats_score":
+            round(
+                ats_score,
+                2
+            ),
+
+        "keyword_score":
             keyword_score,
-            2
-        ),
 
-        "keyword_score": round(
-            keyword_score,
-            2
-        ),
+        "format_score":
+            format_score,
 
-        "matched_skills": matched_skills,
+        "experience_score":
+            experience_score,
 
-        "missing_skills": missing_skills,
+        "completeness_score":
+            completeness_score,
 
-        "required_skills": jd_skills
+        "matched_skills":
+            matched_skills,
+
+        "missing_skills":
+            missing_skills,
+
+        "required_skills":
+            jd_skills,
+
+        "has_job_description":
+            True
     }
