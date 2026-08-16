@@ -1,6 +1,10 @@
+# ============================================================
 # backend/services/rag.py
+# Resume Retrieval / RAG Engine
+# ============================================================
 
 import re
+
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -15,10 +19,21 @@ model = SentenceTransformer(
 
 
 # ============================================================
-# IN-MEMORY RESUME STORAGE
+# RESUME STORAGE
 # ============================================================
 
-resume_chunks = []
+# Structure:
+#
+# {
+#     "resume_id": [
+#         {
+#             "text": "...",
+#             "embedding": [...]
+#         }
+#     ]
+# }
+
+resume_store = {}
 
 
 # ============================================================
@@ -27,7 +42,7 @@ resume_chunks = []
 
 def chunk_text(
     text: str,
-    chunk_size: int = 500
+    chunk_size: int = 300
 ) -> list:
     """
     Split resume text into smaller chunks.
@@ -36,7 +51,6 @@ def chunk_text(
     if not text:
         return []
 
-    # Normalize whitespace
     text = re.sub(
         r"\s+",
         " ",
@@ -54,11 +68,16 @@ def chunk_text(
     ):
 
         chunk = " ".join(
-            words[i:i + chunk_size]
+            words[
+                i:i + chunk_size
+            ]
         )
 
         if chunk.strip():
-            chunks.append(chunk)
+
+            chunks.append(
+                chunk
+            )
 
     return chunks
 
@@ -68,44 +87,49 @@ def chunk_text(
 # ============================================================
 
 def store_resume_embeddings(
-    resume_text: str
+    resume_text: str,
+    resume_id: str = "default"
 ):
     """
     Create embeddings for resume chunks
-    and store them in memory.
-
-    Returns the created chunks.
+    and store them against a resume ID.
     """
-
-    global resume_chunks
 
     chunks = chunk_text(
         resume_text
     )
 
     if not chunks:
-        resume_chunks = []
+
+        resume_store[
+            resume_id
+        ] = []
+
         return []
 
     embeddings = model.encode(
         chunks
     )
 
-    resume_chunks = []
+    stored_chunks = []
 
     for chunk, embedding in zip(
         chunks,
         embeddings
     ):
 
-        resume_chunks.append({
+        stored_chunks.append({
 
             "text": chunk,
 
             "embedding": embedding
         })
 
-    return resume_chunks
+    resume_store[
+        resume_id
+    ] = stored_chunks
+
+    return stored_chunks
 
 
 # ============================================================
@@ -114,17 +138,25 @@ def store_resume_embeddings(
 
 def retrieve_relevant_chunks(
     question: str,
+    resume_id: str = "default",
     top_k: int = 3
 ) -> str:
     """
-    Retrieve the most relevant resume chunks
-    for the user's question.
+    Retrieve resume chunks most relevant
+    to the user's question.
     """
 
     if not question:
+
         return ""
 
-    if not resume_chunks:
+    chunks = resume_store.get(
+        resume_id,
+        []
+    )
+
+    if not chunks:
+
         return ""
 
     question_embedding = model.encode(
@@ -133,28 +165,51 @@ def retrieve_relevant_chunks(
 
     similarities = []
 
-    for item in resume_chunks:
+    for item in chunks:
 
         score = cosine_similarity(
+
             [question_embedding],
+
             [item["embedding"]]
+
         )[0][0]
 
         similarities.append(
             (
-                score,
+                float(score),
                 item["text"]
             )
         )
 
     similarities.sort(
-        key=lambda x: x[0],
+        key=lambda item: item[0],
         reverse=True
     )
 
-    selected = similarities[:top_k]
+    selected = similarities[
+        :top_k
+    ]
 
     return "\n\n".join(
         item[1]
         for item in selected
+    )
+
+
+# ============================================================
+# DELETE RESUME FROM RAG STORE
+# ============================================================
+
+def delete_resume_embeddings(
+    resume_id: str
+):
+    """
+    Remove a resume from the in-memory
+    RAG store.
+    """
+
+    resume_store.pop(
+        resume_id,
+        None
     )
