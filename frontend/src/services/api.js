@@ -1,25 +1,89 @@
+// ============================================================
+// frontend/src/services/api.js
+// Resume Screening AI - API Service
+// ============================================================
+
 import axios from "axios";
 
-const API = axios.create({
-  baseURL: "http://127.0.0.1:8000",
-  
-});
 
 // ============================================================
-// AUTH TOKEN
+// AXIOS INSTANCE
+// ============================================================
+
+const API = axios.create({
+
+  baseURL: "http://127.0.0.1:8000",
+
+  timeout: 120000,
+
+});
+
+
+// ============================================================
+// AUTH TOKEN INTERCEPTOR
 // ============================================================
 
 API.interceptors.request.use(
+
   (config) => {
-    const token = localStorage.getItem("access_token");
+
+    const token =
+      localStorage.getItem(
+        "access_token"
+      );
 
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+
+      config.headers =
+        config.headers || {};
+
+      config.headers.Authorization =
+        `Bearer ${token}`;
     }
 
     return config;
   },
-  (error) => Promise.reject(error)
+
+  (error) => {
+
+    return Promise.reject(
+      error
+    );
+  }
+);
+
+
+// ============================================================
+// RESPONSE INTERCEPTOR
+// ============================================================
+
+API.interceptors.response.use(
+
+  (response) => {
+
+    return response;
+  },
+
+  (error) => {
+
+    // --------------------------------------------------------
+    // Automatically remove invalid token
+    // --------------------------------------------------------
+
+    if (
+      error.response &&
+      error.response.status === 401
+    ) {
+
+      localStorage.removeItem(
+        "access_token"
+      );
+    }
+
+    return Promise.reject(
+      error
+    );
+  }
 );
 
 
@@ -27,42 +91,71 @@ API.interceptors.request.use(
 // AUTH
 // ============================================================
 
+
+/**
+ * Register a new user.
+ */
 export const registerUser = async (
+
   username,
+
   email,
+
   password
+
 ) => {
+
   const response = await API.post(
+
     "/register",
+
     {
       username,
       email,
       password,
     }
+
   );
 
   return response.data;
 };
 
 
+/**
+ * Login user and store JWT token.
+ */
 export const loginUser = async (
+
   email,
+
   password
+
 ) => {
+
   const response = await API.post(
+
     "/login",
+
     {
       email,
       password,
     }
+
   );
 
-  const data = response.data;
+  const data =
+    response.data;
 
-  if (data.access_token) {
+  if (
+    data.access_token
+  ) {
+
     localStorage.setItem(
+
       "access_token",
+
       data.access_token
+
     );
   }
 
@@ -70,9 +163,26 @@ export const loginUser = async (
 };
 
 
+/**
+ * Logout user.
+ */
 export const logoutUser = () => {
+
   localStorage.removeItem(
     "access_token"
+  );
+};
+
+
+/**
+ * Check whether user is authenticated.
+ */
+export const isAuthenticated = () => {
+
+  return Boolean(
+    localStorage.getItem(
+      "access_token"
+    )
   );
 };
 
@@ -81,11 +191,34 @@ export const logoutUser = () => {
 // RESUME ANALYSIS
 // ============================================================
 
+
+/**
+ * Upload and analyze a resume.
+ *
+ * Supports:
+ * - PDF
+ * - DOCX
+ *
+ * Optional:
+ * - Job Description
+ */
 export const analyzeResume = async (
+
   file,
+
   jobDescription = ""
+
 ) => {
-  const formData = new FormData();
+
+  if (!file) {
+
+    throw new Error(
+      "Please select a resume file."
+    );
+  }
+
+  const formData =
+    new FormData();
 
   formData.append(
     "file",
@@ -97,15 +230,23 @@ export const analyzeResume = async (
     jobDescription
   );
 
-  const response = await API.post(
-    "/api/analyze",
-    formData,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    }
-  );
+  /*
+   * Do NOT manually set Content-Type here.
+   *
+   * The browser/Axios automatically adds:
+   *
+   * multipart/form-data;
+   * boundary=...
+   */
+
+  const response =
+    await API.post(
+
+      "/api/analyze",
+
+      formData
+
+    );
 
   return response.data;
 };
@@ -115,17 +256,49 @@ export const analyzeResume = async (
 // CHATBOT
 // ============================================================
 
+
+/**
+ * Ask the AI assistant about a saved resume.
+ */
 export const chatWithResume = async (
+
   resumeId,
+
   question
+
 ) => {
-  const response = await API.post(
-    "/api/chat",
-    {
-      resume_id: resumeId,
-      question,
-    }
-  );
+
+  if (!resumeId) {
+
+    throw new Error(
+      "Resume ID is required."
+    );
+  }
+
+  if (
+    !question ||
+    !question.trim()
+  ) {
+
+    throw new Error(
+      "Please enter a question."
+    );
+  }
+
+  const response =
+    await API.post(
+
+      "/api/chat",
+
+      {
+        resume_id:
+          resumeId,
+
+        question:
+          question.trim()
+      }
+
+    );
 
   return response.data;
 };
@@ -135,69 +308,125 @@ export const chatWithResume = async (
 // DASHBOARD
 // ============================================================
 
-export const getDashboardStats = async () => {
-  const response = await API.get(
-    "/dashboard/stats"
-  );
 
-  return response.data;
-};
+/**
+ * Get dashboard statistics.
+ */
+export const getDashboardStats =
+  async () => {
+
+    const response =
+      await API.get(
+
+        "/dashboard/stats"
+
+      );
+
+    return response.data;
+  };
 
 
 // ============================================================
-// RESUME HISTORY
+// RESUME LIST / HISTORY
 // ============================================================
 
-export const getMyResumes = async () => {
-  const response = await API.get(
-    "/my-resumes"
-  );
 
-  return response.data;
-};
+/**
+ * Get all resumes belonging
+ * to the logged-in user.
+ */
+export const getMyResumes =
+  async () => {
+
+    const response =
+      await API.get(
+
+        "/my-resumes"
+
+      );
+
+    return response.data;
+  };
 
 
-export const getResumeHistory = async () => {
-  const response = await API.get(
-    "/resume/history"
-  );
+/**
+ * Get complete resume history.
+ */
+export const getResumeHistory =
+  async () => {
 
-  return response.data;
-};
+    const response =
+      await API.get(
+
+        "/resume/history"
+
+      );
+
+    return response.data;
+  };
 
 
 // ============================================================
 // SINGLE RESUME
 // ============================================================
 
-export const getResume = async (
-  resumeId
-) => {
-  const response = await API.get(
-    `/resume/${resumeId}`
-  );
 
-  return response.data;
-};
+/**
+ * Get one saved resume
+ * and its complete analysis.
+ */
+export const getResume =
+  async (resumeId) => {
+
+    if (!resumeId) {
+
+      throw new Error(
+        "Resume ID is required."
+      );
+    }
+
+    const response =
+      await API.get(
+
+        `/resume/${resumeId}`
+
+      );
+
+    return response.data;
+  };
 
 
 // ============================================================
 // DELETE RESUME
 // ============================================================
 
-export const deleteResume = async (
-  resumeId
-) => {
-  const response = await API.delete(
-    `/resume/${resumeId}`
-  );
 
-  return response.data;
-};
+/**
+ * Delete a saved resume.
+ */
+export const deleteResume =
+  async (resumeId) => {
+
+    if (!resumeId) {
+
+      throw new Error(
+        "Resume ID is required."
+      );
+    }
+
+    const response =
+      await API.delete(
+
+        `/resume/${resumeId}`
+
+      );
+
+    return response.data;
+  };
 
 
 // ============================================================
-// DEFAULT AXIOS INSTANCE
+// DEFAULT EXPORT
 // ============================================================
 
 export default API;
