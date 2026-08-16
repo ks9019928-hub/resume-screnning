@@ -9,6 +9,7 @@ from datetime import datetime
 from typing import Optional
 
 from bson import ObjectId
+
 from fastapi import (
     FastAPI,
     UploadFile,
@@ -17,7 +18,9 @@ from fastapi import (
     Depends,
     HTTPException
 )
+
 from fastapi.middleware.cors import CORSMiddleware
+
 from pydantic import BaseModel, Field
 
 
@@ -25,16 +28,16 @@ from pydantic import BaseModel, Field
 # INTERNAL IMPORTS
 # ============================================================
 
-# Resume parsing
+# Resume parser
 from utils.parser import extract_text
 
-# NLP / ATS
+# ATS / NLP
 from services.ats import (
     analyze_resume,
     calculate
 )
 
-# Resume-JD matching
+# Resume ↔ Job matching
 from services.matcher import (
     calculate_match
 )
@@ -51,10 +54,11 @@ from services.chatbot import (
 
 # RAG
 from services.rag import (
-    store_resume_embeddings
+    store_resume_embeddings,
+    delete_resume_embeddings
 )
 
-# Skills dictionary
+# Skills
 from data.skills import SKILLS
 
 # Database
@@ -86,7 +90,7 @@ app = FastAPI(
     title="Resume Screening AI API",
     description=(
         "AI-powered resume screening, ATS analysis, "
-        "job matching and career assistant API."
+        "job matching, recommendations and career assistant."
     ),
     version="1.0.0"
 )
@@ -100,7 +104,8 @@ app.add_middleware(
     CORSMiddleware,
 
     allow_origins=[
-        "http://localhost:5173"
+        "http://localhost:5173",
+        "http://127.0.0.1:5173"
     ],
 
     allow_credentials=True,
@@ -112,7 +117,7 @@ app.add_middleware(
 
 
 # ============================================================
-# DIRECTORIES
+# UPLOAD DIRECTORY
 # ============================================================
 
 UPLOAD_DIR = "uploads"
@@ -128,32 +133,28 @@ os.makedirs(
 # ============================================================
 
 class UserRegister(BaseModel):
-
     username: str
-
     email: str
-
     password: str
 
 
 class UserLogin(BaseModel):
-
     email: str
-
     password: str
 
 
 class ChatRequest(BaseModel):
 
-    # Can use an existing saved resume
+    # Existing saved resume
     resume_id: Optional[str] = None
 
-    # Or send resume directly
+    # Optional direct resume context
     resume_text: Optional[str] = None
 
+    # User's question
     question: str
 
-    # Parsed ATS/NLP analysis
+    # Optional analysis sent by frontend
     analysis: dict = Field(
         default_factory=dict
     )
@@ -173,7 +174,7 @@ def home():
 
 
 # ============================================================
-# RESUME ANALYSIS
+# ANALYZE RESUME
 # ============================================================
 
 @app.post("/api/analyze")
@@ -181,23 +182,24 @@ async def analyze_resume_endpoint(
 
     file: UploadFile = File(...),
 
-    # Job description is optional
+    # Optional Job Description
     job_description: str = Form(""),
 
+    # Authenticated user
     current_user: dict = Depends(
         get_current_user
     )
 ):
 
     # --------------------------------------------------------
-    # Validate filename
+    # Validate file
     # --------------------------------------------------------
 
     if not file.filename:
 
         raise HTTPException(
             status_code=400,
-            detail="No file provided."
+            detail="No resume file provided."
         )
 
     # --------------------------------------------------------
@@ -219,12 +221,12 @@ async def analyze_resume_endpoint(
             status_code=400,
             detail=(
                 "Unsupported file format. "
-                "Only PDF and DOCX files are allowed."
+                "Only PDF and DOCX files are supported."
             )
         )
 
     # --------------------------------------------------------
-    # Prevent unsafe filenames
+    # Safe filename
     # --------------------------------------------------------
 
     safe_filename = os.path.basename(
@@ -238,9 +240,9 @@ async def analyze_resume_endpoint(
 
     try:
 
-        # ----------------------------------------------------
-        # Save uploaded file
-        # ----------------------------------------------------
+        # ====================================================
+        # 1. SAVE UPLOADED FILE
+        # ====================================================
 
         with open(
             file_location,
@@ -252,9 +254,9 @@ async def analyze_resume_endpoint(
                 buffer
             )
 
-        # ----------------------------------------------------
-        # Extract resume text
-        # ----------------------------------------------------
+        # ====================================================
+        # 2. EXTRACT RESUME TEXT
+        # ====================================================
 
         extracted_text = extract_text(
             file_location
@@ -265,21 +267,21 @@ async def analyze_resume_endpoint(
             raise HTTPException(
                 status_code=400,
                 detail=(
-                    "Unable to extract readable text "
-                    "from the resume."
+                    "No readable text was found "
+                    "in the uploaded resume."
                 )
             )
 
-        # ----------------------------------------------------
-        # NLP / Resume Analysis
-        # ----------------------------------------------------
+        # ====================================================
+        # 3. NLP / RESUME ANALYSIS
+        # ====================================================
 
         resume_analysis = analyze_resume(
             extracted_text
         )
 
         # ----------------------------------------------------
-        # Extract hard skills
+        # Extract detected hard skills
         # ----------------------------------------------------
 
         skills = resume_analysis.get(
@@ -287,17 +289,9 @@ async def analyze_resume_endpoint(
             []
         )
 
-        # ----------------------------------------------------
-        # Store RAG embeddings
-        # ----------------------------------------------------
-
-        store_resume_embeddings(
-            extracted_text
-        )
-
-        # ----------------------------------------------------
-        # Semantic + Skill Matching
-        # ----------------------------------------------------
+        # ====================================================
+        # 4. RESUME ↔ JD MATCHING
+        # ====================================================
 
         match_result = calculate_match(
 
@@ -310,9 +304,9 @@ async def analyze_resume_endpoint(
             skill_dictionary=SKILLS
         )
 
-        # ----------------------------------------------------
-        # ATS Analysis
-        # ----------------------------------------------------
+        # ====================================================
+        # 5. ATS ANALYSIS
+        # ====================================================
 
         ats_result = calculate(
 
@@ -321,103 +315,130 @@ async def analyze_resume_endpoint(
             job_description
         )
 
-        # ----------------------------------------------------
-        # Recommendations
-        # ----------------------------------------------------
+        # ====================================================
+        # 6. RECOMMENDATIONS
+        # ====================================================
+
+        # Compatible with your current
+        # recommendation.py:
+        #
+        # gen_recommendation(resume_skill, jd_text)
 
         recommendations = gen_recommendation(
 
             resume_skill=skills,
 
-            jd_text=job_description,
-
-            resume_text=extracted_text
+            jd_text=job_description
         )
 
-        # ----------------------------------------------------
-        # Current timestamp
-        # ----------------------------------------------------
-
-        created_at = datetime.utcnow()
-
-        # ----------------------------------------------------
-        # Save complete candidate analysis
-        # ----------------------------------------------------
+        # ====================================================
+        # 7. SAVE COMPLETE RESULT TO MONGODB
+        # ====================================================
 
         candidate_data = {
 
-            "filename": safe_filename,
+            "filename":
+                safe_filename,
 
-            "resume_text": extracted_text,
+            "resume_text":
+                extracted_text,
 
-            "skills": skills,
+            "skills":
+                skills,
 
-            "resume_analysis": resume_analysis,
+            "resume_analysis":
+                resume_analysis,
 
-            # Semantic score
-            "semantic_score": match_result.get(
-                "semantic_score",
-                0
-            ),
+            # Matching
+            "semantic_score":
+                match_result.get(
+                    "semantic_score",
+                    0
+                ),
 
-            # Combined match score
-            "match_score": match_result.get(
-                "match_score",
-                0
-            ),
+            "match_score":
+                match_result.get(
+                    "match_score",
+                    0
+                ),
 
-            # Skill match
-            "skill_score": match_result.get(
-                "skill_score",
-                0
-            ),
+            "skill_score":
+                match_result.get(
+                    "skill_score",
+                    0
+                ),
 
-            "matched_skills": match_result.get(
-                "matched_skills",
-                []
-            ),
+            "matched_skills":
+                match_result.get(
+                    "matched_skills",
+                    []
+                ),
 
-            "missing_skills": match_result.get(
-                "missing_skills",
-                []
-            ),
+            "missing_skills":
+                match_result.get(
+                    "missing_skills",
+                    []
+                ),
+
+            "required_skills":
+                match_result.get(
+                    "required_skills",
+                    []
+                ),
 
             # ATS
-            "ats_score": ats_result.get(
-                "ats_score",
-                0
-            ),
+            "ats_score":
+                ats_result.get(
+                    "ats_score",
+                    0
+                ),
 
-            "ats_analysis": ats_result,
+            "ats_analysis":
+                ats_result,
 
             # Recommendations
-            "recommendations": recommendations,
+            "recommendations":
+                recommendations,
 
-            # Job description
-            "job_description": job_description,
+            # JD
+            "job_description":
+                job_description,
 
             # User
-            "user_id": current_user["sub"],
+            "user_id":
+                current_user["sub"],
 
             # Timestamp
-            "created_at": created_at
+            "created_at":
+                datetime.utcnow()
         }
-
-        # ----------------------------------------------------
-        # Insert into MongoDB
-        # ----------------------------------------------------
 
         result = candidates_collection.insert_one(
             candidate_data
         )
 
+        # ====================================================
+        # 8. GET MONGODB RESUME ID
+        # ====================================================
+
         resume_id = str(
             result.inserted_id
         )
 
-        # ----------------------------------------------------
-        # Final API Response
-        # ----------------------------------------------------
+        # ====================================================
+        # 9. STORE RAG EMBEDDINGS
+        # ====================================================
+
+        store_resume_embeddings(
+
+            resume_text=extracted_text,
+
+            resume_id=resume_id
+        )
+
+        # ====================================================
+        # 10. RETURN COMPLETE RESPONSE
+        # ====================================================
 
         return {
 
@@ -425,11 +446,14 @@ async def analyze_resume_endpoint(
 
             "resume": {
 
-                "id": resume_id,
+                "id":
+                    resume_id,
 
-                "filename": safe_filename,
+                "filename":
+                    safe_filename,
 
-                "preview": extracted_text[:1500]
+                "preview":
+                    extracted_text[:1500]
             },
 
             "analysis": {
@@ -474,6 +498,12 @@ async def analyze_resume_endpoint(
                     resume_analysis.get(
                         "contact",
                         {}
+                    ),
+
+                "total_skills":
+                    resume_analysis.get(
+                        "total_skills",
+                        0
                     )
             },
 
@@ -509,6 +539,12 @@ async def analyze_resume_endpoint(
                         []
                     ),
 
+                "required_skills":
+                    match_result.get(
+                        "required_skills",
+                        []
+                    ),
+
                 "has_job_description":
                     match_result.get(
                         "has_job_description",
@@ -516,11 +552,16 @@ async def analyze_resume_endpoint(
                     )
             },
 
-            "ats": ats_result,
+            "ats":
+                ats_result,
 
             "recommendations":
                 recommendations
         }
+
+    except HTTPException:
+
+        raise
 
     except ValueError as e:
 
@@ -529,37 +570,40 @@ async def analyze_resume_endpoint(
             detail=str(e)
         )
 
-    except HTTPException:
-
-        raise
-
     except Exception as e:
 
         print(
-            f"Resume analysis error: {e}"
+            "Resume analysis error:",
+            e
         )
 
         raise HTTPException(
             status_code=500,
             detail=(
-                "An error occurred while "
-                "analyzing the resume."
+                "An unexpected error occurred "
+                "while analyzing the resume."
             )
         )
 
     finally:
 
-        # ----------------------------------------------------
-        # Always delete temporary upload
-        # ----------------------------------------------------
+        # ====================================================
+        # DELETE TEMPORARY FILE
+        # ====================================================
 
         if os.path.exists(
             file_location
         ):
 
-            os.remove(
-                file_location
-            )
+            try:
+
+                os.remove(
+                    file_location
+                )
+
+            except Exception:
+
+                pass
 
 
 # ============================================================
@@ -581,8 +625,19 @@ def chat_with_bot(
     analysis = data.analysis
 
     # --------------------------------------------------------
-    # If resume_id is provided, retrieve resume from MongoDB
+    # Validate question
     # --------------------------------------------------------
+
+    if not data.question.strip():
+
+        raise HTTPException(
+            status_code=400,
+            detail="Question cannot be empty."
+        )
+
+    # ========================================================
+    # GET SAVED RESUME
+    # ========================================================
 
     if data.resume_id:
 
@@ -600,8 +655,10 @@ def chat_with_bot(
             )
 
         resume = candidates_collection.find_one(
+
             {
-                "_id": resume_object_id,
+                "_id":
+                    resume_object_id,
 
                 "user_id":
                     current_user["sub"]
@@ -615,13 +672,19 @@ def chat_with_bot(
                 detail="Resume not found."
             )
 
+        # ----------------------------------------------------
+        # Get resume text from database
+        # ----------------------------------------------------
+
         resume_text = resume.get(
             "resume_text",
             ""
         )
 
-        # Use saved analysis if frontend
-        # did not send it
+        # ----------------------------------------------------
+        # Get saved analysis
+        # ----------------------------------------------------
+
         if not analysis:
 
             analysis = resume.get(
@@ -629,9 +692,9 @@ def chat_with_bot(
                 {}
             )
 
-    # --------------------------------------------------------
-    # Validate resume
-    # --------------------------------------------------------
+    # ========================================================
+    # VALIDATE RESUME CONTEXT
+    # ========================================================
 
     if not resume_text:
 
@@ -639,24 +702,13 @@ def chat_with_bot(
             status_code=400,
             detail=(
                 "Resume context is required. "
-                "Provide resume_id or resume_text."
+                "Provide a valid resume_id."
             )
         )
 
-    # --------------------------------------------------------
-    # Validate question
-    # --------------------------------------------------------
-
-    if not data.question.strip():
-
-        raise HTTPException(
-            status_code=400,
-            detail="Question cannot be empty."
-        )
-
-    # --------------------------------------------------------
-    # Ask AI assistant
-    # --------------------------------------------------------
+    # ========================================================
+    # GENERATE AI RESPONSE
+    # ========================================================
 
     try:
 
@@ -666,13 +718,16 @@ def chat_with_bot(
 
             question=data.question,
 
-            analysis=analysis
+            analysis=analysis,
+
+            resume_id=data.resume_id or "default"
         )
 
     except Exception as e:
 
         print(
-            f"Chatbot error: {e}"
+            "Chatbot error:",
+            e
         )
 
         raise HTTPException(
@@ -686,7 +741,8 @@ def chat_with_bot(
 
         "success": True,
 
-        "answer": answer
+        "answer":
+            answer
     }
 
 
@@ -700,12 +756,14 @@ def register(
 ):
 
     # --------------------------------------------------------
-    # Check existing account
+    # Check duplicate email
     # --------------------------------------------------------
 
     existing_user = users_collection.find_one(
+
         {
-            "email": user.email
+            "email":
+                user.email
         }
     )
 
@@ -730,11 +788,14 @@ def register(
 
     user_data = {
 
-        "username": user.username,
+        "username":
+            user.username,
 
-        "email": user.email,
+        "email":
+            user.email,
 
-        "password": hashed_password,
+        "password":
+            hashed_password,
 
         "created_at":
             datetime.utcnow()
@@ -767,8 +828,10 @@ def login(
     # --------------------------------------------------------
 
     db_user = users_collection.find_one(
+
         {
-            "email": user.email
+            "email":
+                user.email
         }
     )
 
@@ -784,8 +847,11 @@ def login(
     # --------------------------------------------------------
 
     if not verify_password(
+
         user.password,
+
         db_user["password"]
+
     ):
 
         raise HTTPException(
@@ -794,14 +860,16 @@ def login(
         )
 
     # --------------------------------------------------------
-    # Generate JWT
+    # Generate access token
     # --------------------------------------------------------
 
     access_token = create_access_token(
+
         {
-            "sub": str(
-                db_user["_id"]
-            ),
+            "sub":
+                str(
+                    db_user["_id"]
+                ),
 
             "email":
                 db_user["email"]
@@ -833,7 +901,9 @@ def dashboard_stats(
 ):
 
     resumes = list(
+
         candidates_collection.find(
+
             {
                 "user_id":
                     current_user["sub"]
@@ -848,6 +918,8 @@ def dashboard_stats(
     if not resumes:
 
         return {
+
+            "success": True,
 
             "total_resumes": 0,
 
@@ -895,12 +967,14 @@ def dashboard_stats(
 
     average_ats = (
         sum(ats_scores)
-        / len(ats_scores)
+        /
+        len(ats_scores)
     )
 
     average_match = (
         sum(match_scores)
-        / len(match_scores)
+        /
+        len(match_scores)
     )
 
     best_match = max(
@@ -908,6 +982,8 @@ def dashboard_stats(
     )
 
     return {
+
+        "success": True,
 
         "total_resumes":
             len(resumes),
@@ -968,12 +1044,14 @@ def get_my_resumes(
 
                 "created_at": 1
             }
+        ).sort(
+            "created_at",
+            -1
         )
-
     )
 
     # --------------------------------------------------------
-    # Convert MongoDB ObjectId
+    # Convert ObjectId
     # --------------------------------------------------------
 
     for resume in resumes:
@@ -986,7 +1064,8 @@ def get_my_resumes(
 
         "success": True,
 
-        "resumes": resumes
+        "resumes":
+            resumes
     }
 
 
@@ -1005,7 +1084,7 @@ def get_resume(
 ):
 
     # --------------------------------------------------------
-    # Validate ObjectId
+    # Validate ID
     # --------------------------------------------------------
 
     try:
@@ -1022,13 +1101,14 @@ def get_resume(
         )
 
     # --------------------------------------------------------
-    # Find resume belonging to user
+    # Find user's resume
     # --------------------------------------------------------
 
     resume = candidates_collection.find_one(
 
         {
-            "_id": object_id,
+            "_id":
+                object_id,
 
             "user_id":
                 current_user["sub"]
@@ -1043,7 +1123,7 @@ def get_resume(
         )
 
     # --------------------------------------------------------
-    # Convert ObjectId to string
+    # Convert ObjectId
     # --------------------------------------------------------
 
     resume["_id"] = str(
@@ -1054,7 +1134,8 @@ def get_resume(
 
         "success": True,
 
-        "resume": resume
+        "resume":
+            resume
     }
 
 
@@ -1073,7 +1154,7 @@ def delete_resume(
 ):
 
     # --------------------------------------------------------
-    # Validate ObjectId
+    # Validate ID
     # --------------------------------------------------------
 
     try:
@@ -1090,13 +1171,14 @@ def delete_resume(
         )
 
     # --------------------------------------------------------
-    # Delete only user's own resume
+    # Delete user's resume
     # --------------------------------------------------------
 
     result = candidates_collection.delete_one(
 
         {
-            "_id": object_id,
+            "_id":
+                object_id,
 
             "user_id":
                 current_user["sub"]
@@ -1109,6 +1191,14 @@ def delete_resume(
             status_code=404,
             detail="Resume not found."
         )
+
+    # --------------------------------------------------------
+    # Remove RAG data
+    # --------------------------------------------------------
+
+    delete_resume_embeddings(
+        resume_id
+    )
 
     return {
 
@@ -1141,6 +1231,8 @@ def resume_history(
             },
 
             {
+                # Do not send full resume text
+                # in history response
                 "resume_text": 0
             }
         ).sort(
@@ -1163,5 +1255,6 @@ def resume_history(
 
         "success": True,
 
-        "resumes": resumes
+        "resumes":
+            resumes
     }
