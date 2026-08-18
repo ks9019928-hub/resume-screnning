@@ -1,15 +1,19 @@
+// ============================================================
+// frontend/src/services/dashboard.js
+// Dashboard API Services
+// ============================================================
+
 import API from "./api";
 
+
+// ============================================================
+// GET DASHBOARD STATISTICS
+// ============================================================
+
 export const getDashboardStats = async () => {
-    const token = localStorage.getItem("token");
 
     const response = await API.get(
-        "/dashboard/stats",
-        {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        }
+        "/dashboard/stats"
     );
 
     return response.data;
