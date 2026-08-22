@@ -140,6 +140,10 @@ app.add_middleware(
 
     allow_origins=[
         FRONTEND_URL,
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
     ],
 
     allow_credentials=True,
@@ -148,6 +152,7 @@ app.add_middleware(
 
     allow_headers=["*"],
 )
+
 
 
 # ============================================================
@@ -417,9 +422,11 @@ async def analyze_resume_endpoint(
 
         ats_result = calculate(
 
-            skills,
+            skills=skills,
 
-            job_description,
+            job_description=job_description,
+
+            resume_text=extracted_text,
         )
 
 
@@ -432,7 +439,10 @@ async def analyze_resume_endpoint(
             resume_skill=skills,
 
             jd_text=job_description,
+
+            resume_text=extracted_text,
         )
+
 
 
         # ====================================================
@@ -561,10 +571,11 @@ async def analyze_resume_endpoint(
         # STORE RAG EMBEDDINGS
         # ====================================================
 
-        # Compatible with your current rag.py
         store_resume_embeddings(
-            extracted_text
+            resume_text=extracted_text,
+            resume_id=resume_id,
         )
+
 
 
         # ====================================================
@@ -872,7 +883,10 @@ def chat_with_bot(
             question=data.question,
 
             analysis=analysis,
+
+            resume_id=data.resume_id or "default",
         )
+
 
 
     except Exception as e:
