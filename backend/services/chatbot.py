@@ -27,23 +27,19 @@ load_dotenv()
 
 API_KEY = os.getenv(
     "MY_API_KEY"
-)
-
-if not API_KEY:
-
-    raise RuntimeError(
-        "MY_API_KEY is not configured."
-    )
-
-
-genai.configure(
-    api_key=API_KEY
+) or os.getenv(
+    "GEMINI_API_KEY"
+) or os.getenv(
+    "GOOGLE_API_KEY"
 )
 
 
-model = genai.GenerativeModel(
-    "gemini-1.5-flash"
-)
+def get_model():
+    if not API_KEY:
+        return None
+    genai.configure(api_key=API_KEY)
+    return genai.GenerativeModel("gemini-1.5-flash")
+
 
 
 # ============================================================
@@ -276,9 +272,15 @@ analysis, retrieved context and previous conversation.
     # Generate response
     # --------------------------------------------------------
 
+    ai_model = get_model()
+    if not ai_model:
+        return (
+            "Gemini API key is not configured. Please set MY_API_KEY in backend/.env to use the AI assistant."
+        )
+
     try:
 
-        response = model.generate_content(
+        response = ai_model.generate_content(
             prompt
         )
 
@@ -305,6 +307,7 @@ analysis, retrieved context and previous conversation.
             "I'm unable to process your request "
             "right now. Please try again."
         )
+
 
     # --------------------------------------------------------
     # Save conversation
