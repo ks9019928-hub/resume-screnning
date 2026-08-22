@@ -1,9 +1,14 @@
-from jose import jwt
+import os
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
+from jose import jwt
 
-SECRET_KEY = "CHANGE_THIS_TO_A_LONG_RANDOM_SECRET"
+load_dotenv()
+
+SECRET_KEY = os.getenv("JWT_SECRET", "CHANGE_THIS_TO_A_LONG_RANDOM_SECRET")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
+
 
 
 def create_access_token(data: dict):
