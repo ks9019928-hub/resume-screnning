@@ -1,37 +1,90 @@
-import React from 'react';
+import { FileText, Award, Lightbulb, Mail, Phone, Globe, Briefcase } from 'lucide-react';
+
 
 function ResumeOverview({ result }) {
   if (!result) return null;
 
+  const filename = result.resume?.filename || result.filename || "Uploaded Resume";
+  const hardSkills = result.analysis?.hard_skills || result.skills || [];
+  const recommendations = result.recommendations || [];
+  const experienceYears = result.analysis?.experience_years ?? result.experience_years;
+  const contact = result.analysis?.contact || result.contact || {};
+
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mt-6">
-      <h2 className="text-xl font-semibold text-slate-800 mb-5">
+      <h2 className="text-xl font-semibold text-slate-800 mb-5 flex items-center gap-2">
+        <FileText className="text-indigo-500" size={20} />
         Resume Overview
       </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="flex flex-col">
-          <span className="text-sm text-slate-400 mb-1">File Name</span>
-          <div className="flex items-center gap-2 font-medium text-slate-700 break-all">
-             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
-            {result.filename}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div className="flex flex-col bg-slate-50 p-4 rounded-xl border border-slate-100">
+          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">
+            File Name
+          </span>
+          <div className="flex items-center gap-2 font-medium text-slate-700 break-all text-sm">
+            <FileText size={16} className="text-slate-400 flex-shrink-0" />
+            {filename}
           </div>
         </div>
 
-        <div className="flex flex-col">
-          <span className="text-sm text-slate-400 mb-1">Total Skills Found</span>
-          <span className="font-semibold text-2xl text-slate-800">
-            {result.skills?.length || 0}
+        <div className="flex flex-col bg-slate-50 p-4 rounded-xl border border-slate-100">
+          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">
+            Total Skills Found
           </span>
+          <div className="flex items-center gap-2">
+            <Award size={18} className="text-indigo-500" />
+            <span className="font-bold text-2xl text-slate-800">
+              {hardSkills.length}
+            </span>
+          </div>
         </div>
 
-        <div className="flex flex-col">
-          <span className="text-sm text-slate-400 mb-1">Actionable Tips</span>
-          <span className="font-semibold text-2xl text-slate-800">
-            {result.recommendations?.length || 0}
+        <div className="flex flex-col bg-slate-50 p-4 rounded-xl border border-slate-100">
+          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">
+            Actionable Tips
           </span>
+          <div className="flex items-center gap-2">
+            <Lightbulb size={18} className="text-amber-500" />
+            <span className="font-bold text-2xl text-slate-800">
+              {recommendations.length}
+            </span>
+          </div>
         </div>
       </div>
+
+      {/* Candidate Details if extracted */}
+      {(contact.email || contact.phone || experienceYears !== undefined) && (
+        <div className="pt-4 border-t border-slate-100 flex flex-wrap gap-4 text-xs text-slate-600">
+          {experienceYears !== undefined && experienceYears > 0 && (
+            <div className="flex items-center gap-1.5 bg-slate-100 px-3 py-1.5 rounded-lg font-medium">
+              <Briefcase size={14} className="text-slate-500" />
+              <span>{experienceYears}+ Years Experience</span>
+            </div>
+          )}
+
+          {contact.email && (
+            <div className="flex items-center gap-1.5 bg-slate-100 px-3 py-1.5 rounded-lg">
+              <Mail size={14} className="text-slate-500" />
+              <span>{contact.email}</span>
+            </div>
+          )}
+
+          {contact.phone && (
+            <div className="flex items-center gap-1.5 bg-slate-100 px-3 py-1.5 rounded-lg">
+              <Phone size={14} className="text-slate-500" />
+              <span>{contact.phone}</span>
+            </div>
+          )}
+
+          {contact.linkedin && (
+            <div className="flex items-center gap-1.5 bg-slate-100 px-3 py-1.5 rounded-lg">
+              <Globe size={14} className="text-slate-500" />
+              <span>{contact.linkedin}</span>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
