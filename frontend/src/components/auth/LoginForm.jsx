@@ -1,19 +1,45 @@
-import React, { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, Globe, MessageCircle, Monitor, Hexagon } from 'lucide-react';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Mail, Lock, Eye, EyeOff, FileText, Globe, MessageSquare, Code } from 'lucide-react';
 
-export default function DarkThemeLogin() {
+import { loginUser } from '../../services/api';
+
+
+export default function LoginForm() {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Simulate login action
-    console.log('Logging in with:', { email, password });
+    setError('');
+
+    if (!email.trim() || !password.trim()) {
+      setError('Please enter both email and password.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await loginUser(email, password);
+      navigate('/dashboard');
+    } catch (err) {
+      console.error('Login error:', err);
+      setError(
+        err.response?.data?.detail ||
+        err.response?.data?.message ||
+        'Invalid email or password. Please try again.'
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex flex-col md:flex-row font-sans text-gray-300">
+    <div className="min-h-screen w-full bg-[#0a0a0a] flex flex-col md:flex-row font-sans text-gray-300">
       
       {/* Left Side - Branding/Decorative (Hidden on small screens) */}
       <div className="hidden md:flex md:w-1/2 bg-gradient-to-br from-indigo-900 via-purple-900 to-black items-center justify-center p-12 relative overflow-hidden">
@@ -25,15 +51,16 @@ export default function DarkThemeLogin() {
         </div>
 
         <div className="relative z-10 text-center space-y-6 max-w-lg">
-          <Hexagon className="w-24 h-24 text-indigo-400 mx-auto" strokeWidth={1.5} />
-          <h1 className="text-5xl font-bold text-white tracking-tight">Nexus Portal</h1>
-          <p className="text-xl text-indigo-200 font-light">
-            Enter the dashboard to manage your projects, connect with your team, and track your progress in real-time.
+          <div className="w-20 h-20 rounded-2xl bg-indigo-600/30 border border-indigo-400/40 flex items-center justify-center mx-auto shadow-2xl">
+            <FileText className="w-10 h-10 text-indigo-400" strokeWidth={1.8} />
+          </div>
+          <h1 className="text-4xl font-bold text-white tracking-tight">AI Resume Screening</h1>
+          <p className="text-lg text-indigo-200 font-light leading-relaxed">
+            Screen resumes against job descriptions, optimize ATS compatibility, and supercharge your hiring workflow.
           </p>
         </div>
       </div>
 
-      { }
       {/* Right Side - Login Form */}
       <div className="flex-1 flex items-center justify-center p-8 sm:p-12 lg:p-24 bg-[#0a0a0a]">
         <div className="w-full max-w-md space-y-8">
@@ -41,9 +68,8 @@ export default function DarkThemeLogin() {
           {/* Form Header */}
           <div className="text-center md:text-left">
             <div className="md:hidden flex justify-center mb-6">
-               {/* Simple abstract logo for mobile */}
-               <div className="h-12 w-12 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center">
-                 <span className="text-white font-bold text-xl">N</span>
+               <div className="h-12 w-12 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg">
+                 <FileText className="w-6 h-6 text-white" />
                </div>
             </div>
             <h2 className="text-3xl font-extrabold text-white">
@@ -51,15 +77,21 @@ export default function DarkThemeLogin() {
             </h2>
             <p className="mt-2 text-sm text-gray-400">
               Don't have an account?{' '}
-              <a href="#" className="font-semibold text-indigo-400 hover:text-indigo-300 transition-colors">
+              <Link to="/register" className="font-semibold text-indigo-400 hover:text-indigo-300 transition-colors">
                 Sign up for free
-              </a>
+              </Link>
             </p>
           </div>
 
-          { }
+
           {/* Form Section */}
           <div className="bg-[#121212] p-8 rounded-2xl border border-gray-800 shadow-2xl">
+            {error && (
+              <div className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+                {error}
+              </div>
+            )}
+
             <form className="space-y-6" onSubmit={handleSubmit}>
               
               {/* Email Input */}
@@ -77,9 +109,10 @@ export default function DarkThemeLogin() {
                     type="email"
                     autoComplete="email"
                     required
+                    disabled={loading}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-700 rounded-xl bg-[#1a1a1a] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all sm:text-sm"
+                    className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-700 rounded-xl bg-[#1a1a1a] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all sm:text-sm disabled:opacity-50"
                     placeholder="you@example.com"
                   />
                 </div>
@@ -100,9 +133,10 @@ export default function DarkThemeLogin() {
                     type={showPassword ? 'text' : 'password'}
                     autoComplete="current-password"
                     required
+                    disabled={loading}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="appearance-none block w-full pl-10 pr-10 py-3 border border-gray-700 rounded-xl bg-[#1a1a1a] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all sm:text-sm"
+                    className="appearance-none block w-full pl-10 pr-10 py-3 border border-gray-700 rounded-xl bg-[#1a1a1a] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all sm:text-sm disabled:opacity-50"
                     placeholder="••••••••"
                   />
                   <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
@@ -121,7 +155,6 @@ export default function DarkThemeLogin() {
                 </div>
               </div>
 
-              { }
               {/* Options */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
@@ -147,12 +180,14 @@ export default function DarkThemeLogin() {
               <div>
                 <button
                   type="submit"
-                  className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 focus:ring-offset-[#121212] transition-colors"
+                  disabled={loading}
+                  className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 focus:ring-offset-[#121212] transition-colors"
                 >
-                  Sign in to account
+                  {loading ? 'Signing in...' : 'Sign in to account'}
                 </button>
               </div>
             </form>
+
 
             { }
             {/* Social Login Separator */}
@@ -170,30 +205,35 @@ export default function DarkThemeLogin() {
 
               {/* Social Buttons */}
               <div className="mt-6 grid grid-cols-3 gap-4">
-                <a
-                  href="#"
+                <button
+                  type="button"
+                  onClick={() => alert("Social login is coming soon.")}
                   className="w-full inline-flex justify-center py-2.5 px-4 border border-gray-700 rounded-xl shadow-sm bg-[#1a1a1a] text-sm font-medium text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
                 >
                   <span className="sr-only">Sign in with Google</span>
                   <Globe className="w-5 h-5"/>
-                </a>
+                </button>
 
-                <a
-                  href="#"
+                <button
+                  type="button"
+                  onClick={() => alert("Social login is coming soon.")}
                   className="w-full inline-flex justify-center py-2.5 px-4 border border-gray-700 rounded-xl shadow-sm bg-[#1a1a1a] text-sm font-medium text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
                 >
                   <span className="sr-only">Sign in with Twitter</span>
-                  <MessageCircle className="w-5 h-5"/>
-                </a>
+                  <MessageSquare className="w-5 h-5"/>
+                </button>
 
-                <a
-                  href="#"
+                <button
+                  type="button"
+                  onClick={() => alert("Social login is coming soon.")}
                   className="w-full inline-flex justify-center py-2.5 px-4 border border-gray-700 rounded-xl shadow-sm bg-[#1a1a1a] text-sm font-medium text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
                 >
                   <span className="sr-only">Sign in with GitHub</span>
-                  <Monitor className="w-5 h-5"/>
-                </a>
+                  <Code className="w-5 h-5"/>
+                </button>
               </div>
+
+
             </div>
           </div>
           
