@@ -233,3 +233,13 @@ Thumbs.db
 
 uploads/
 *.log
+
+# ============================================================
+# AI Agents & Skills
+# ============================================================
+.agents/
+.agent/
+_agents/
+_agent/
+skills-lock.json
+.claude/
