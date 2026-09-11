@@ -4,8 +4,10 @@
 # ============================================================
 
 import os
-os.environ.setdefault("HF_HUB_OFFLINE", "1")
-os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
+if os.getenv("HF_HUB_OFFLINE"):
+    os.environ["HF_HUB_OFFLINE"] = os.getenv("HF_HUB_OFFLINE")
+if os.getenv("TRANSFORMERS_OFFLINE"):
+    os.environ["TRANSFORMERS_OFFLINE"] = os.getenv("TRANSFORMERS_OFFLINE")
 
 import shutil
 import tempfile
