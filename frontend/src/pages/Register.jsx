@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { User, Mail, Lock, Eye, EyeOff, Sparkles, ArrowRight, CheckCircle2 } from "lucide-react";
 import { registerUser } from "../services/api";
+import BackgroundPaths from "../components/ui/BackgroundPaths";
+import BorderBeam from "../components/ui/BorderBeam";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -71,7 +73,9 @@ export default function Register() {
       setError(
         err.response?.data?.detail ||
           err.response?.data?.message ||
-          "Unable to create account. Please try again."
+          (err.code === "ERR_NETWORK" || err.message === "Network Error"
+            ? "Cannot connect to server at http://127.0.0.1:8000. Please verify the backend is running."
+            : "Unable to create account. Please try again.")
       );
     } finally {
       setLoading(false);
@@ -80,10 +84,11 @@ export default function Register() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center px-4 py-12 relative overflow-hidden">
-      {/* Background Grids & Glow */}
+      {/* 21st.dev Dynamic Animated Backgrounds */}
+      <BackgroundPaths className="opacity-40" />
       <div className="absolute inset-0 bg-grid-pattern opacity-40 pointer-events-none" />
-      <div className="ambient-glow-indigo top-0 left-1/4 -translate-x-1/2 -translate-y-1/2" />
-      <div className="ambient-glow-purple bottom-0 right-1/4 translate-x-1/2 translate-y-1/2" />
+      <div className="ambient-glow-indigo top-0 left-1/4 -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
+      <div className="ambient-glow-purple bottom-0 right-1/4 translate-x-1/2 translate-y-1/2 pointer-events-none" />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -91,7 +96,8 @@ export default function Register() {
         transition={{ duration: 0.5 }}
         className="relative w-full max-w-md z-10"
       >
-        <div className="glass-panel rounded-3xl p-8 sm:p-10 border border-white/10 shadow-2xl">
+        <div className="glass-panel rounded-3xl p-8 sm:p-10 border border-white/10 shadow-2xl relative overflow-hidden">
+          <BorderBeam size={240} duration={12} borderWidth={1.5} />
           {/* Header */}
           <div className="text-center mb-8">
             <Link to="/" className="inline-flex items-center gap-2 mb-4 group">

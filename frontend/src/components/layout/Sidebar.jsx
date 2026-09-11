@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import {
   LayoutDashboard,
   Upload,
@@ -28,38 +29,17 @@ export default function Sidebar({
     },
     {
       id: "chat",
-      label: "AI Assistant",
+      label: "AI Copilot",
       icon: MessageSquare,
     },
   ];
 
   return (
-    <aside className="hidden lg:flex w-64 min-h-screen bg-slate-950 text-slate-300 border-r border-slate-800 flex-col flex-shrink-0">
-      {/* ================================================== */}
-      {/* LOGO */}
-      {/* ================================================== */}
-      <div className="h-20 flex items-center px-6 border-b border-slate-800">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-900/30">
-            <Sparkles className="text-white" size={20} />
-          </div>
-          <div>
-            <h1 className="text-base font-bold tracking-tight text-white">
-              ResumeAI
-            </h1>
-            <p className="text-[10px] text-slate-400 uppercase tracking-wider">
-              Screening & ATS
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* ================================================== */}
-      {/* NAVIGATION */}
-      {/* ================================================== */}
-      <div className="p-4 flex-1">
-        <p className="px-4 text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-3 mt-2">
-          Navigation
+    <aside className="hidden lg:flex w-64 min-h-screen bg-slate-950/80 backdrop-blur-xl text-slate-300 border-r border-slate-800/80 flex-col flex-shrink-0 relative z-20">
+      {/* Navigation Links */}
+      <div className="p-4 flex-1 mt-4">
+        <p className="px-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-3">
+          Workspace
         </p>
 
         <ul className="space-y-1.5">
@@ -68,25 +48,28 @@ export default function Sidebar({
             const isActive = activeTab === item.id;
 
             return (
-              <li key={item.id}>
+              <li key={item.id} className="relative">
                 <button
                   type="button"
                   onClick={() => setActiveTab(item.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-left text-sm font-medium ${
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 text-left text-sm font-semibold relative ${
                     isActive
-                      ? "bg-indigo-600 text-white shadow-md shadow-indigo-900/40 font-semibold"
-                      : "text-slate-400 hover:bg-slate-900 hover:text-white"
+                      ? "text-white bg-indigo-600 shadow-lg shadow-indigo-600/30"
+                      : "text-slate-400 hover:text-white hover:bg-slate-900/60"
                   }`}
                 >
                   <Icon
                     size={18}
-                    className={
-                      isActive
-                        ? "text-white"
-                        : "text-slate-400"
-                    }
+                    className={isActive ? "text-white" : "text-slate-400"}
                   />
                   <span>{item.label}</span>
+
+                  {isActive && (
+                    <motion.div
+                      layoutId="sidebarActiveGlow"
+                      className="absolute right-3 w-1.5 h-1.5 rounded-full bg-white shadow-sm"
+                    />
+                  )}
                 </button>
               </li>
             );
@@ -94,17 +77,15 @@ export default function Sidebar({
         </ul>
       </div>
 
-      {/* ================================================== */}
-      {/* BOTTOM CTA */}
-      {/* ================================================== */}
-      <div className="p-4 border-t border-slate-800">
+      {/* Bottom Quick Action */}
+      <div className="p-4 border-t border-slate-800/80">
         <button
           type="button"
           onClick={() => setActiveTab("upload")}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold transition-all shadow-lg shadow-indigo-900/20"
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-bold transition-all shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 transform hover:-translate-y-0.5 active:translate-y-0"
         >
-          <Upload size={16} />
-          Analyze New Resume
+          <Sparkles size={15} />
+          <span>New Resume Scan</span>
         </button>
       </div>
     </aside>

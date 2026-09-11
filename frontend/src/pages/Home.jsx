@@ -5,7 +5,7 @@ import Mission from "../components/sections/Mission";
 
 export default function Home() {
   return (
-    <main className="bg-black text-white min-h-screen">
+    <main className="bg-slate-950 text-white min-h-screen">
       <Navbar />
       <Hero />
       <SearchChanged />

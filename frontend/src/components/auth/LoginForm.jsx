@@ -1,37 +1,49 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, FileText, Globe, MessageSquare, Code } from 'lucide-react';
-
-import { loginUser } from '../../services/api';
-
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  Sparkles,
+  ArrowRight,
+  ShieldCheck,
+  Zap,
+} from "lucide-react";
+import { loginUser } from "../../services/api";
+import BackgroundPaths from "../ui/BackgroundPaths";
+import BorderBeam from "../ui/BorderBeam";
 
 export default function LoginForm() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     if (!email.trim() || !password.trim()) {
-      setError('Please enter both email and password.');
+      setError("Please enter both email and password.");
       return;
     }
 
     try {
       setLoading(true);
       await loginUser(email, password);
-      navigate('/dashboard');
+      navigate("/dashboard");
     } catch (err) {
-      console.error('Login error:', err);
+      console.error("Login error:", err);
       setError(
         err.response?.data?.detail ||
-        err.response?.data?.message ||
-        'Invalid email or password. Please try again.'
+          err.response?.data?.message ||
+          (err.code === "ERR_NETWORK" || err.message === "Network Error"
+            ? "Cannot connect to server at http://127.0.0.1:8000. Please verify the backend is running."
+            : "Invalid email or password. Please try again.")
       );
     } finally {
       setLoading(false);
@@ -39,234 +51,153 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#0a0a0a] flex flex-col md:flex-row font-sans text-gray-300">
-      
-      {/* Left Side - Branding/Decorative (Hidden on small screens) */}
-      <div className="hidden md:flex md:w-1/2 bg-gradient-to-br from-indigo-900 via-purple-900 to-black items-center justify-center p-12 relative overflow-hidden">
-        {/* Abstract background elements */}
-        <div className="absolute top-0 left-0 w-full h-full opacity-20">
-            <div className="absolute top-10 left-10 w-64 h-64 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
-            <div className="absolute top-10 right-10 w-64 h-64 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
-            <div className="absolute -bottom-8 left-20 w-64 h-64 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000"></div>
-        </div>
+    <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center px-4 py-12 relative overflow-hidden">
+      {/* 21st.dev Dynamic Animated Backgrounds */}
+      <BackgroundPaths className="opacity-40" />
+      <div className="absolute inset-0 bg-grid-pattern opacity-40 pointer-events-none" />
+      <div className="ambient-glow-indigo top-0 left-1/4 -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
+      <div className="ambient-glow-purple bottom-0 right-1/4 translate-x-1/2 translate-y-1/2 pointer-events-none" />
 
-        <div className="relative z-10 text-center space-y-6 max-w-lg">
-          <div className="w-20 h-20 rounded-2xl bg-indigo-600/30 border border-indigo-400/40 flex items-center justify-center mx-auto shadow-2xl">
-            <FileText className="w-10 h-10 text-indigo-400" strokeWidth={1.8} />
-          </div>
-          <h1 className="text-4xl font-bold text-white tracking-tight">AI Resume Screening</h1>
-          <p className="text-lg text-indigo-200 font-light leading-relaxed">
-            Screen resumes against job descriptions, optimize ATS compatibility, and supercharge your hiring workflow.
-          </p>
-        </div>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="relative w-full max-w-md z-10"
+      >
+        <div className="glass-panel rounded-3xl p-8 sm:p-10 border border-white/10 shadow-2xl relative overflow-hidden">
+          <BorderBeam size={240} duration={12} borderWidth={1.5} />
 
-      {/* Right Side - Login Form */}
-      <div className="flex-1 flex items-center justify-center p-8 sm:p-12 lg:p-24 bg-[#0a0a0a]">
-        <div className="w-full max-w-md space-y-8">
-          
-          {/* Form Header */}
-          <div className="text-center md:text-left">
-            <div className="md:hidden flex justify-center mb-6">
-               <div className="h-12 w-12 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg">
-                 <FileText className="w-6 h-6 text-white" />
-               </div>
-            </div>
-            <h2 className="text-3xl font-extrabold text-white">
-              Welcome back
-            </h2>
-            <p className="mt-2 text-sm text-gray-400">
-              Don't have an account?{' '}
-              <Link to="/register" className="font-semibold text-indigo-400 hover:text-indigo-300 transition-colors">
-                Sign up for free
-              </Link>
+          {/* Header */}
+          <div className="text-center mb-8">
+            <Link to="/" className="inline-flex items-center gap-2 mb-4 group">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-950/50 group-hover:scale-105 transition-transform">
+                <Sparkles className="text-white" size={24} />
+              </div>
+            </Link>
+
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+              Welcome Back
+            </h1>
+
+            <p className="text-slate-400 text-xs sm:text-sm mt-2">
+              Sign in to manage your resume scans & ATS optimizations
             </p>
           </div>
 
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-5 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-xs sm:text-sm text-rose-300 font-medium"
+            >
+              {error}
+            </motion.div>
+          )}
 
-          {/* Form Section */}
-          <div className="bg-[#121212] p-8 rounded-2xl border border-gray-800 shadow-2xl">
-            {error && (
-              <div className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
-                {error}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Email */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                Email Address
+              </label>
+              <div className="relative">
+                <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+                <input
+                  type="email"
+                  name="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  disabled={loading}
+                  className="w-full rounded-xl border border-slate-800 bg-slate-900/80 pl-11 pr-4 py-3 text-sm text-white placeholder-slate-500 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
+                />
               </div>
-            )}
+            </div>
 
-            <form className="space-y-6" onSubmit={handleSubmit}>
-              
-              {/* Email Input */}
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-                  Email address
-                </label>
-                <div className="relative mt-1">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Mail className="h-5 w-5 text-gray-500" aria-hidden="true" />
-                  </div>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    autoComplete="email"
-                    required
-                    disabled={loading}
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-700 rounded-xl bg-[#1a1a1a] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all sm:text-sm disabled:opacity-50"
-                    placeholder="you@example.com"
-                  />
-                </div>
-              </div>
-
-              {/* Password Input */}
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
+            {/* Password */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
                   Password
                 </label>
-                <div className="relative mt-1">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-gray-500" aria-hidden="true" />
-                  </div>
-                  <input
-                    id="password"
-                    name="password"
-                    type={showPassword ? 'text' : 'password'}
-                    autoComplete="current-password"
-                    required
-                    disabled={loading}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="appearance-none block w-full pl-10 pr-10 py-3 border border-gray-700 rounded-xl bg-[#1a1a1a] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all sm:text-sm disabled:opacity-50"
-                    placeholder="••••••••"
-                  />
-                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="text-gray-400 hover:text-gray-200 focus:outline-none transition-colors p-1"
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-5 w-5" aria-hidden="true" />
-                      ) : (
-                        <Eye className="h-5 w-5" aria-hidden="true" />
-                      )}
-                    </button>
-                  </div>
-                </div>
+                <a href="#" className="text-xs text-indigo-400 hover:text-indigo-300">
+                  Forgot?
+                </a>
               </div>
-
-              {/* Options */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <input
-                    id="remember-me"
-                    name="remember-me"
-                    type="checkbox"
-                    className="h-4 w-4 rounded border-gray-700 bg-[#1a1a1a] text-indigo-500 focus:ring-indigo-500 focus:ring-offset-gray-900 cursor-pointer"
-                  />
-                  <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-400 cursor-pointer">
-                    Remember me
-                  </label>
-                </div>
-
-                <div className="text-sm">
-                  <a href="#" className="font-semibold text-indigo-400 hover:text-indigo-300 transition-colors">
-                    Forgot password?
-                  </a>
-                </div>
-              </div>
-
-              {/* Submit Button */}
-              <div>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 focus:ring-offset-[#121212] transition-colors"
-                >
-                  {loading ? 'Signing in...' : 'Sign in to account'}
-                </button>
-              </div>
-            </form>
-
-
-            { }
-            {/* Social Login Separator */}
-            <div className="mt-8">
               <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-700" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-[#121212] text-gray-500">
-                    Or continue with
-                  </span>
-                </div>
-              </div>
-
-              {/* Social Buttons */}
-              <div className="mt-6 grid grid-cols-3 gap-4">
+                <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                  disabled={loading}
+                  className="w-full rounded-xl border border-slate-800 bg-slate-900/80 pl-11 pr-11 py-3 text-sm text-white placeholder-slate-500 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
+                />
                 <button
                   type="button"
-                  onClick={() => alert("Social login is coming soon.")}
-                  className="w-full inline-flex justify-center py-2.5 px-4 border border-gray-700 rounded-xl shadow-sm bg-[#1a1a1a] text-sm font-medium text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
                 >
-                  <span className="sr-only">Sign in with Google</span>
-                  <Globe className="w-5 h-5"/>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => alert("Social login is coming soon.")}
-                  className="w-full inline-flex justify-center py-2.5 px-4 border border-gray-700 rounded-xl shadow-sm bg-[#1a1a1a] text-sm font-medium text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
-                >
-                  <span className="sr-only">Sign in with Twitter</span>
-                  <MessageSquare className="w-5 h-5"/>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => alert("Social login is coming soon.")}
-                  className="w-full inline-flex justify-center py-2.5 px-4 border border-gray-700 rounded-xl shadow-sm bg-[#1a1a1a] text-sm font-medium text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
-                >
-                  <span className="sr-only">Sign in with GitHub</span>
-                  <Code className="w-5 h-5"/>
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
+            </div>
 
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full mt-2 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 py-3.5 font-bold text-sm text-white shadow-lg shadow-indigo-600/25 transition-all disabled:opacity-60 disabled:cursor-not-allowed transform hover:-translate-y-0.5 active:translate-y-0"
+            >
+              {loading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Signing in...
+                </>
+              ) : (
+                <>
+                  <span>Sign In</span>
+                  <ArrowRight size={16} />
+                </>
+              )}
+            </button>
+          </form>
 
+          {/* Feature Highlights */}
+          <div className="mt-8 pt-6 border-t border-slate-800/80 flex items-center justify-around text-center text-[11px] text-slate-400">
+            <div className="flex items-center gap-1.5">
+              <ShieldCheck size={14} className="text-emerald-400" />
+              <span>100% ATS Safe</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Zap size={14} className="text-indigo-400" />
+              <span>Instant AI Match</span>
             </div>
           </div>
-          
-          {/* Footer Text */}
-          <p className="text-center text-xs text-gray-500">
-            By signing in, you agree to our{' '}
-            <a href="#" className="underline hover:text-gray-300 transition-colors">Terms of Service</a>
-            {' '}and{' '}
-            <a href="#" className="underline hover:text-gray-300 transition-colors">Privacy Policy</a>.
-          </p>
 
+          <div className="mt-6 text-center text-xs text-slate-400">
+            Don&apos;t have an account?{" "}
+            <Link
+              to="/register"
+              className="font-bold text-indigo-400 hover:text-indigo-300 transition-colors"
+            >
+              Sign up free
+            </Link>
+          </div>
         </div>
-      </div>
-      
-      { }
-      {/* Add custom styles for the background blobs animation */}
-      <style dangerouslySetInnerHTML={{__html: `
-        @keyframes blob {
-          0% { transform: translate(0px, 0px) scale(1); }
-          33% { transform: translate(30px, -50px) scale(1.1); }
-          66% { transform: translate(-20px, 20px) scale(0.9); }
-          100% { transform: translate(0px, 0px) scale(1); }
-        }
-        .animate-blob {
-          animation: blob 7s infinite;
-        }
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-        .animation-delay-4000 {
-          animation-delay: 4s;
-        }
-      `}} />
+
+        <div className="text-center mt-6">
+          <Link
+            to="/"
+            className="text-xs font-semibold text-slate-500 hover:text-slate-300 transition-colors"
+          >
+            ← Back to Home
+          </Link>
+        </div>
+      </motion.div>
     </div>
   );
 }

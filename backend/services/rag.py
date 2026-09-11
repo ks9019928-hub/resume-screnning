@@ -10,12 +10,20 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 
 # ============================================================
-# EMBEDDING MODEL
+# EMBEDDING MODEL (LAZY LOADED)
 # ============================================================
 
-model = SentenceTransformer(
-    "all-MiniLM-L6-v2"
-)
+_model = None
+
+def get_embedding_model():
+    global _model
+    if _model is None:
+        try:
+            _model = SentenceTransformer("all-MiniLM-L6-v2", local_files_only=True)
+        except Exception:
+            _model = SentenceTransformer("all-MiniLM-L6-v2")
+    return _model
+
 
 
 # ============================================================
@@ -107,7 +115,7 @@ def store_resume_embeddings(
 
         return []
 
-    embeddings = model.encode(
+    embeddings = get_embedding_model().encode(
         chunks
     )
 
@@ -159,7 +167,7 @@ def retrieve_relevant_chunks(
 
         return ""
 
-    question_embedding = model.encode(
+    question_embedding = get_embedding_model().encode(
         [question]
     )[0]
 

@@ -85,3 +85,4 @@ export default function LaserScanner({ fileName = "resume.pdf" }) {
     </div>
   );
 }
+

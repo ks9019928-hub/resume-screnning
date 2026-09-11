@@ -10,12 +10,19 @@ import re
 
 
 # ============================================================
-# LOAD EMBEDDING MODEL
+# LOAD EMBEDDING MODEL (LAZY LOADED)
 # ============================================================
 
-model = SentenceTransformer(
-    "all-MiniLM-L6-v2"
-)
+_model = None
+
+def get_embedding_model():
+    global _model
+    if _model is None:
+        try:
+            _model = SentenceTransformer("all-MiniLM-L6-v2", local_files_only=True)
+        except Exception:
+            _model = SentenceTransformer("all-MiniLM-L6-v2")
+    return _model
 
 
 # ============================================================
@@ -85,7 +92,7 @@ def match_resume_to_jd(
     # Generate embeddings
     # --------------------------------------------------------
 
-    embeddings = model.encode(
+    embeddings = get_embedding_model().encode(
         [
             resume_text,
             jd_text
