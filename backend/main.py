@@ -38,6 +38,18 @@ FRONTEND_URL = os.getenv(
     "http://localhost:5173"
 )
 
+ALLOWED_ORIGINS = [
+    origin.strip() for origin in FRONTEND_URL.split(",") if origin.strip()
+]
+for default_origin in [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]:
+    if default_origin not in ALLOWED_ORIGINS:
+        ALLOWED_ORIGINS.append(default_origin)
+
 MAX_FILE_SIZE_MB = int(
     os.getenv(
         "MAX_FILE_SIZE_MB",
@@ -138,13 +150,8 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
 
-    allow_origins=[
-        FRONTEND_URL,
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ],
+    allow_origins=ALLOWED_ORIGINS,
+    allow_origin_regex=r"https://.*\.vercel\.app",
 
     allow_credentials=True,
 
